@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NS Producción · Quinta</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0c;
+  --surface: #111114;
+  --surface2: #18181d;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --text: #f0ede6;
+  --muted: #6b6b78;
+  --muted2: #9898a8;
+  --gold: #e8b84b;
+  --gold2: #f0cd78;
+  --green: #3dd68c;
+  --amber: #f0a030;
+  --red: #f05050;
+  --blue: #5090f0;
+  --purple: #9060f0;
+  --teal: #30d0b0;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── ANIMACIONES ── */
+@keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+@keyframes pulse { 0%,100% { opacity:.7; } 50% { opacity:1; } }
+@keyframes scan { 0% { top: -2px; } 100% { top: 100%; } }
+@keyframes shimmer { 0% { transform:translateX(-100%); } 100% { transform:translateX(100%); } }
+@keyframes countUp { from { opacity:0; transform:scale(0.85); } to { opacity:1; transform:scale(1); } }
+@keyframes glow { 0%,100% { box-shadow: 0 0 12px rgba(232,184,75,0.15); } 50% { box-shadow: 0 0 28px rgba(232,184,75,0.35); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── TOPBAR ── */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(10,10,12,0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+  height: 60px;
+  display: flex; align-items: center; gap: 16px;
+}
+.topbar-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: 2px;
+  color: var(--gold);
+  text-shadow: 0 0 20px rgba(232,184,75,0.4);
+}
+.topbar-sep { width: 1px; height: 24px; background: var(--border2); }
+.topbar-title { font-size: 14px; font-weight: 500; color: var(--muted2); }
+.topbar-badge {
+  margin-left: auto;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  background: rgba(232,184,75,0.08);
+  color: var(--gold2);
+  border: 1px solid rgba(232,184,75,0.2);
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+.topbar-btns { display: flex; gap: 8px; }
+.btn-top {
+  font-size: 12px; font-weight: 500; font-family: 'DM Sans', sans-serif;
+  padding: 6px 14px; border-radius: 6px;
+  border: 1px solid var(--border2);
+  background: var(--surface2); color: var(--muted2);
+  cursor: pointer; transition: all .2s;
+  display: flex; align-items: center; gap: 6px;
+}
+.btn-top:hover { border-color: var(--gold); color: var(--gold); background: rgba(232,184,75,0.07); }
+.btn-top.primary { background: var(--gold); color: #0a0a0c; border-color: var(--gold); font-weight: 600; }
+.btn-top.primary:hover { background: var(--gold2); box-shadow: 0 4px 16px rgba(232,184,75,0.35); }
+
+/* ── FILTERS ── */
+.filters-bar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 28px;
+  display: flex; flex-wrap: wrap; gap: 14px; align-items: center;
+}
+.filter-group { display: flex; flex-direction: column; gap: 4px; }
+.filter-group label {
+  font-size: 10px; font-weight: 600;
+  color: var(--muted); letter-spacing: .08em; text-transform: uppercase;
+}
+.filter-group select {
+  font-size: 13px; font-family: 'DM Sans', sans-serif;
+  padding: 7px 28px 7px 10px;
+  border: 1px solid var(--border2);
+  border-radius: 7px;
+  background: var(--surface2); color: var(--text);
+  cursor: pointer; outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%236b6b78' d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 8px center; background-size: 14px;
+  transition: border-color .2s;
+}
+.filter-group select:focus { border-color: var(--gold); }
+.filter-sep { width: 1px; height: 36px; background: var(--border); margin: 0 4px; }
+.filter-info { margin-left: auto; font-size: 12px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+#fileStatus { font-size: 12px; color: var(--green); display: none; align-items: center; gap: 6px; }
+
+/* ── DROP ZONE ── */
+.drop-zone {
+  display: none;
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(10,10,12,0.92);
+  border: 2px dashed var(--gold);
+  flex-direction: column; align-items: center; justify-content: center;
+  gap: 16px; animation: fadeUp .2s ease;
+}
+.drop-zone.active { display: flex; }
+.drop-zone-icon { font-size: 56px; animation: pulse 1.5s infinite; }
+.drop-zone-text { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 3px; color: var(--gold); }
+.drop-zone-sub { font-size: 14px; color: var(--muted2); }
+
+/* ── MAIN ── */
+.main { padding: 24px 28px; display: flex; flex-direction: column; gap: 20px; }
+
+/* ── KPI ROW ── */
+.kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+.kpi {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  position: relative; overflow: hidden;
+  animation: fadeUp .4s ease both;
+  transition: border-color .2s, transform .15s;
+}
+.kpi:nth-child(1) { animation-delay: .05s; }
+.kpi:nth-child(2) { animation-delay: .1s; }
+.kpi:nth-child(3) { animation-delay: .15s; }
+.kpi:nth-child(4) { animation-delay: .2s; }
+.kpi:nth-child(5) { animation-delay: .25s; }
+.kpi:hover { border-color: var(--border2); transform: translateY(-2px); }
+.kpi::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0; transition: opacity .3s;
+}
+.kpi:hover::before { opacity: 1; }
+.kpi-label {
+  font-size: 10px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--muted); margin-bottom: 10px;
+}
+.kpi-value {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px; letter-spacing: 1px;
+  color: var(--text);
+  animation: countUp .5s ease;
+}
+.kpi-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.kpi.good .kpi-value { color: var(--green); }
+.kpi.good::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--green), transparent); opacity: .4; }
+.kpi.warn .kpi-value { color: var(--amber); }
+.kpi.warn::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--amber), transparent); opacity: .4; }
+.kpi.bad .kpi-value { color: var(--red); }
+.kpi.bad::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--red), transparent); opacity: .4; }
+
+/* ── SEMANA TABS ── */
+.semana-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.stab {
+  font-size: 12px; font-family: 'JetBrains Mono', monospace; font-weight: 600;
+  padding: 5px 14px; border-radius: 20px;
+  border: 1px solid var(--border2); background: transparent;
+  color: var(--muted2); cursor: pointer; transition: all .15s;
+  letter-spacing: .04em;
+}
+.stab:hover { border-color: var(--gold); color: var(--gold); }
+.stab.active { background: var(--gold); color: var(--bg); border-color: var(--gold); }
+
+/* ── GRID CHARTS ── */
+.chart-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+@media (max-width: 900px) { .chart-grid { grid-template-columns: 1fr; } }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  animation: fadeUp .5s ease both;
+  position: relative; overflow: hidden;
+  transition: border-color .2s;
+}
+.card:hover { border-color: var(--border2); }
+.card-scan {
+  content: '';
+  position: absolute; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(232,184,75,.15), transparent);
+  top: -2px; animation: scan 4s linear infinite;
+  pointer-events: none;
+}
+.card-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 16px; letter-spacing: 2px;
+  color: var(--muted2); margin-bottom: 16px;
+}
+.card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 16px; }
+.card-head .card-title { margin-bottom: 0; }
+.expand-btn {
+  flex-shrink: 0;
+  width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border2); border-radius: 6px;
+  background: var(--surface2); color: var(--muted2);
+  cursor: pointer; transition: all .15s;
+  font-size: 13px; line-height: 1;
+}
+.expand-btn:hover { border-color: var(--gold); color: var(--gold); background: rgba(232,184,75,.08); }
+.expand-btn svg { width: 13px; height: 13px; }
+
+/* ── MODAL GRÁFICO AMPLIADO ── */
+.chart-modal-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 400;
+  background: rgba(6,6,8,0.85);
+  backdrop-filter: blur(6px);
+  align-items: center; justify-content: center;
+  padding: 40px;
+  animation: fadeUp .15s ease;
+}
+.chart-modal-overlay.active { display: flex; }
+.chart-modal {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  width: 100%; max-width: 1100px;
+  max-height: 90vh;
+  padding: 26px 28px;
+  display: flex; flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0,0,0,.5);
+}
+.chart-modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.chart-modal-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px; letter-spacing: 2px; color: var(--text);
+}
+.chart-modal-close {
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border2); border-radius: 7px;
+  background: var(--surface2); color: var(--muted2);
+  cursor: pointer; font-size: 16px; transition: all .15s;
+}
+.chart-modal-close:hover { border-color: var(--red); color: var(--red); background: rgba(240,80,80,.08); }
+.chart-modal-body { position: relative; flex: 1; min-height: 420px; }
+.chart-modal-body canvas { max-height: 100%; }
+.chart-modal-legend { display: flex; gap: 18px; margin-bottom: 14px; flex-wrap: wrap; }
+.chart-legend { display: flex; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted2); }
+.legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+
+/* ── FAMILIA CARDS ── */
+.fam-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.fam-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  animation: fadeUp .5s ease both;
+  transition: border-color .2s, transform .15s;
+}
+.fam-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+.fam-card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.fam-card-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 14px; letter-spacing: 1.5px;
+  color: var(--muted2);
+}
+.fam-card-pct { font-family: 'Bebas Neue', sans-serif; font-size: 20px; }
+.fam-card-rows { display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: var(--muted2); }
+.fam-card-row { display: flex; justify-content: space-between; }
+.fam-card-val { font-weight: 500; color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+.fam-bar { height: 4px; background: var(--surface2); border-radius: 4px; margin-top: 10px; overflow: hidden; }
+.fam-fill { height: 100%; border-radius: 4px; transition: width .5s cubic-bezier(.4,0,.2,1); }
+
+/* ── TABLA ── */
+.tabla-section { display: flex; flex-direction: column; gap: 12px; }
+.tabla-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+.tabla-controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.tabla-controls input[type=text] {
+  font-size: 13px; font-family: 'DM Sans', sans-serif;
+  padding: 7px 12px;
+  border: 1px solid var(--border2); border-radius: 7px;
+  background: var(--surface2); color: var(--text);
+  width: 220px; outline: none; transition: border-color .2s;
+}
+.tabla-controls input[type=text]:focus { border-color: var(--gold); }
+.tabla-controls select {
+  font-size: 12px; font-family: 'DM Sans', sans-serif;
+  padding: 7px 10px;
+  border: 1px solid var(--border2); border-radius: 7px;
+  background: var(--surface2); color: var(--text);
+  outline: none; cursor: pointer;
+}
+.tabla-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); }
+table.dt {
+  width: 100%; border-collapse: collapse; font-size: 12px;
+}
+table.dt thead th {
+  background: var(--surface2);
+  color: var(--muted); font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .06em;
+  padding: 10px 13px; text-align: left;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap; cursor: pointer; user-select: none;
+  transition: color .15s;
+}
+table.dt thead th:hover { color: var(--gold); }
+table.dt thead th.sorted-asc::after { content: ' ↑'; color: var(--gold); }
+table.dt thead th.sorted-desc::after { content: ' ↓'; color: var(--gold); }
+table.dt thead th.num { text-align: right; }
+table.dt tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
+table.dt tbody tr:last-child { border-bottom: none; }
+table.dt tbody tr:hover { background: var(--surface2); }
+table.dt td { padding: 9px 13px; vertical-align: middle; white-space: nowrap; }
+table.dt td.num { text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+table.dt td.pct { text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; }
+.pct-good { color: var(--green); }
+.pct-warn { color: var(--amber); }
+.pct-bad  { color: var(--red); }
+.fam-pill { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; letter-spacing: .04em; }
+.fam-TORTA  { background:rgba(80,144,240,.15); color:#7ab0f8; }
+.fam-PASTEL { background:rgba(61,214,140,.12); color:#5ae0a0; }
+.fam-KUCHEN { background:rgba(240,160,48,.12); color:#f5be6a; }
+.fam-INSUMO { background:rgba(144,96,240,.12); color:#b890f8; }
+.fam-SECO   { background:rgba(240,80,80,.12); color:#f58888; }
+.fam-pill:not(.fam-TORTA):not(.fam-PASTEL):not(.fam-KUCHEN):not(.fam-INSUMO):not(.fam-SECO) { background:rgba(255,255,255,.06); color:var(--muted2); }
+.tabla-footer { font-size: 12px; color: var(--muted); padding: 8px 2px; }
+
+/* ── PROGRESS BAR EN TABLA ── */
+.bar-cell { display: flex; align-items: center; gap: 8px; }
+.mini-bar-bg { width: 60px; height: 5px; background: var(--surface2); border-radius: 3px; overflow: hidden; flex-shrink: 0; }
+.mini-bar-fill { height: 100%; border-radius: 3px; transition: width .4s; }
+
+/* ── SECTION LABEL ── */
+.section-label {
+  display: flex; align-items: center; gap: 10px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px; letter-spacing: 2.5px; color: var(--muted);
+}
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ── EMPTY ── */
+.empty { text-align: center; padding: 40px; color: var(--muted); font-size: 14px; }
+
+/* ── LOADING ── */
+#loader {
+  display: none;
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(10,10,12,.85);
+  align-items: center; justify-content: center;
+  flex-direction: column; gap: 14px;
+}
+#loader.active { display: flex; }
+.loader-ring {
+  width: 40px; height: 40px; border: 3px solid var(--border);
+  border-top-color: var(--gold); border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+.loader-text { font-size: 13px; color: var(--muted2); }
+</style>
+</head>
+<body>
+
+<!-- DROP ZONE -->
+<div class="drop-zone" id="dropZone">
+  <div class="drop-zone-icon">📂</div>
+  <div class="drop-zone-text">Suelta el archivo Excel aquí</div>
+  <div class="drop-zone-sub">ns_produccion.xlsx</div>
+</div>
+
+<!-- LOADER -->
+<div id="loader"><div class="loader-ring"></div><div class="loader-text">Procesando Excel...</div></div>
+
+<!-- MODAL GRÁFICO AMPLIADO -->
+<div class="chart-modal-overlay" id="chartModalOverlay" onclick="if(event.target===this) closeChartModal()">
+  <div class="chart-modal">
+    <div class="chart-modal-head">
+      <div class="chart-modal-title" id="chartModalTitle">Gráfico</div>
+      <button class="chart-modal-close" onclick="closeChartModal()" title="Cerrar">✕</button>
+    </div>
+    <div class="chart-modal-legend" id="chartModalLegend"></div>
+    <div class="chart-modal-body">
+      <canvas id="modalChartCanvas"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-logo">QUINTA</div>
+  <div class="topbar-sep"></div>
+  <div class="topbar-title">NS Producción</div>
+  <div id="weekBadge" class="topbar-badge">SEMANAS 18 – 23 · 2026</div>
+  <div class="topbar-btns">
+    <div id="fileStatus">✅ <span id="fileStatusText">Excel cargado</span></div>
+    <button class="btn-top" onclick="document.getElementById('fileInput').click()">
+      📂 Cargar Excel
+    </button>
+    <button class="btn-top primary" onclick="descargar()">
+      ⬇ Descargar
+    </button>
+    <input type="file" id="fileInput" accept=".xlsx,.xls" style="display:none" onchange="handleFile(event)">
+  </div>
+</div>
+
+<!-- FILTERS -->
+<div class="filters-bar">
+  <div class="filter-group">
+    <label>Almacén</label>
+    <select id="fAlmacen">
+      <option value="TODOS">Todos</option>
+      <option value="ENEA">ENEA</option>
+      <option value="VESPUCIO">Vespucio</option>
+    </select>
+  </div>
+  <div class="filter-sep"></div>
+  <div class="filter-group">
+    <label>Familia</label>
+    <select id="fFamilia">
+      <option value="TODOS">Todas</option>
+    </select>
+  </div>
+  <div class="filter-sep"></div>
+  <div style="display:flex;flex-direction:column;gap:4px;">
+    <label style="font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;">Semana</label>
+    <div class="semana-tabs" id="semanaTabs"></div>
+  </div>
+  <div class="filter-sep"></div>
+  <div class="filter-group">
+    <label>Ordenar tabla por</label>
+    <select id="fSort" style="font-size:12px;">
+      <option value="pct_asc">% Cumpl. ↑ (peores primero)</option>
+      <option value="pct_desc">% Cumpl. ↓ (mejores primero)</option>
+      <option value="prod_desc">Elaborado ↓</option>
+      <option value="prod_asc">Elaborado ↑</option>
+      <option value="desc_asc">Descripción A-Z</option>
+    </select>
+  </div>
+  <div class="filter-info" id="filterInfo">— registros</div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- KPIs -->
+  <div class="kpi-row" id="kpiRow"></div>
+
+  <!-- CHARTS -->
+  <div class="chart-grid">
+    <div class="card">
+      <div class="card-scan"></div>
+      <div class="card-head">
+        <div class="card-title">Proyectado · Programado · Elaborado por semana</div>
+        <button class="expand-btn" onclick="openChartModal('barChart')" title="Ampliar gráfico">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
+        </button>
+      </div>
+      <div class="chart-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#5090f0"></div>Proyectado</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#3dd68c"></div>Programado</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#e8b84b"></div>Elaborado</div>
+      </div>
+      <div style="position:relative;height:280px;">
+        <canvas id="barChart"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-scan"></div>
+      <div class="card-head">
+        <div class="card-title">Composición elaborado</div>
+        <button class="expand-btn" onclick="openChartModal('pieChart')" title="Ampliar gráfico">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
+        </button>
+      </div>
+      <div style="position:relative;height:200px;">
+        <canvas id="pieChart"></canvas>
+      </div>
+      <div id="pieLegend" style="margin-top:12px;display:flex;flex-direction:column;gap:5px;"></div>
+    </div>
+  </div>
+
+  <!-- FAMILIA CARDS -->
+  <div class="section-label">Por Familia</div>
+  <div class="fam-grid" id="famGrid"></div>
+
+  <!-- TABLA -->
+  <div class="section-label">Detalle de Productos</div>
+  <div class="tabla-section">
+    <div class="tabla-header">
+      <div class="tabla-controls">
+        <input type="text" id="buscar" placeholder="🔍  Buscar producto o SKU…">
+        <select id="fTipo">
+          <option value="TODOS">Todos los tipos</option>
+        </select>
+      </div>
+    </div>
+    <div class="tabla-wrap">
+      <table class="dt" id="tabla">
+        <thead>
+          <tr>
+            <th data-col="SKU" style="width:80px">SKU</th>
+            <th data-col="DESCRIPCION">Descripción</th>
+            <th data-col="ALMACEN">Almacén</th>
+            <th data-col="FAMILIA">Familia</th>
+            <th data-col="TIPO">Tipo</th>
+            <th data-col="PROYECTADO" class="num">Proyectado</th>
+            <th data-col="PLANIFICADO" class="num">Programado</th>
+            <th data-col="PRODUCIDO" class="num">Elaborado</th>
+            <th data-col="PENDIENTE" class="num">Pendiente</th>
+            <th data-col="CUMPL" class="num">% Cumpl.</th>
+          </tr>
+        </thead>
+        <tbody id="tablaBody"></tbody>
+      </table>
+    </div>
+    <div class="tabla-footer" id="tablaFooter"></div>
+  </div>
+
+  <!-- TABLA PROYECCIONES COMPLETA — SIN FILTROS -->
+  <div class="section-label" style="margin-top:8px;">
+    Proyecciones por SKU
+    <span style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--gold);letter-spacing:.04em;margin-left:12px;border:1px solid rgba(232,184,75,.25);padding:2px 8px;border-radius:20px;background:rgba(232,184,75,.07);">SIN FILTROS · DATOS COMPLETOS</span>
+  </div>
+  <div class="tabla-section">
+    <div class="tabla-header">
+      <div class="tabla-controls">
+        <input type="text" id="buscarProy" placeholder="🔍  Buscar SKU o descripción…">
+        <select id="fAlmacenProy">
+          <option value="TODOS">Todos los almacenes</option>
+          <option value="ENEA">ENEA</option>
+          <option value="VESPUCIO">Vespucio</option>
+        </select>
+        <select id="fTipoProy">
+          <option value="TODOS">Todos los tipos</option>
+        </select>
+      </div>
+      <div style="font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;" id="proyFooter2">— registros</div>
+    </div>
+    <div class="tabla-wrap">
+      <table class="dt" id="tablaProy">
+        <thead id="tablaProyHead"></thead>
+        <tbody id="tablaProyBody"></tbody>
+      </table>
+    </div>
+    <div class="tabla-footer" id="tablaProyFooter"></div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════
+//  DATOS EMBEBIDOS (fallback)
+// ════════════════════════════════════════
+const RAW_DEFAULT = [{"ALMACEN":"ENEA","SKU QUINTA":393141,"DESCRIPCION QUINTA":"TORTA LUCUMA JUMBO 15P","FAMILIA":"TORTA","TIPO":"CONGELADO","PROYECTADO 18":1200,"PLANIFICADO 18":1201,"PRODUCIDO 18":601,"PROYECTADO 19":0,"PLANIFICADO 19":0,"PRODUCIDO 19":0,"PROYECTADO 20":0,"PLANIFICADO 20":0,"PRODUCIDO 20":0,"PROYECTADO 21":1440,"PLANIFICADO 21":1428,"PRODUCIDO 21":1428,"PROYECTADO 22":2880,"PLANIFICADO 22":2855,"PRODUCIDO 22":2855},{"ALMACEN":"ENEA","SKU QUINTA":393129,"DESCRIPCION QUINTA":"TORTA DE PIÑA JUMBO 15P","FAMILIA":"TORTA","TIPO":"FRESCO","PROYECTADO 18":1975.4,"PLANIFICADO 18":2038,"PRODUCIDO 18":2038,"PROYECTADO 19":4872,"PLANIFICADO 19":5014,"PRODUCIDO 19":5014,"PROYECTADO 20":1975.4,"PLANIFICADO 20":1706,"PRODUCIDO 20":1706,"PROYECTADO 21":1825.67,"PLANIFICADO 21":1678,"PRODUCIDO 21":1678,"PROYECTADO 22":1825.67,"PLANIFICADO 22":1982,"PRODUCIDO 22":1982},{"ALMACEN":"ENEA","SKU QUINTA":393145,"DESCRIPCION QUINTA":"TORTA SELVA NEGRA JUMBO 15P","FAMILIA":"TORTA","TIPO":"CONGELADO","PROYECTADO 18":5400,"PLANIFICADO 18":6647,"PRODUCIDO 18":5447,"PROYECTADO 19":0,"PLANIFICADO 19":0,"PRODUCIDO 19":0,"PROYECTADO 20":2160,"PLANIFICADO 20":2370,"PRODUCIDO 20":2370,"PROYECTADO 21":1440,"PLANIFICADO 21":1442,"PRODUCIDO 21":1442,"PROYECTADO 22":2880,"PLANIFICADO 22":2891,"PRODUCIDO 22":2171},{"ALMACEN":"ENEA","SKU QUINTA":393171,"DESCRIPCION QUINTA":"TORTA PANQUEQUE NARANJA JUMBO","FAMILIA":"TORTA","TIPO":"CONGELADO","PROYECTADO 18":5400,"PLANIFICADO 18":8987,"PRODUCIDO 18":5387,"PROYECTADO 19":0,"PLANIFICADO 19":0,"PRODUCIDO 19":0,"PROYECTADO 20":3600,"PLANIFICADO 20":3962,"PRODUCIDO 20":3962,"PROYECTADO 21":2400,"PLANIFICADO 21":2400,"PRODUCIDO 21":2400,"PROYECTADO 22":2400,"PLANIFICADO 22":5493,"PRODUCIDO 22":3813},{"ALMACEN":"ENEA","SKU QUINTA":393153,"DESCRIPCION QUINTA":"TORTA VIENA JUMBO 15P","FAMILIA":"TORTA","TIPO":"FRESCO","PROYECTADO 18":1449.8,"PLANIFICADO 18":1618,"PRODUCIDO 18":1618,"PROYECTADO 19":3174,"PLANIFICADO 19":3137,"PRODUCIDO 19":3137,"PROYECTADO 20":1449.8,"PLANIFICADO 20":1357,"PRODUCIDO 20":1357,"PROYECTADO 21":1518,"PLANIFICADO 21":1239,"PRODUCIDO 21":1239,"PROYECTADO 22":1518,"PLANIFICADO 22":1495,"PRODUCIDO 22":1495},{"ALMACEN":"ENEA","SKU QUINTA":393149,"DESCRIPCION QUINTA":"TORTA TRES LECHES JUMBO 15P","FAMILIA":"TORTA","TIPO":"FRESCO","PROYECTADO 18":1588.2,"PLANIFICADO 18":1595,"PRODUCIDO 18":1595,"PROYECTADO 19":3136,"PLANIFICADO 19":3419,"PRODUCIDO 19":3419,"PROYECTADO 20":1588.2,"PLANIFICADO 20":1406,"PRODUCIDO 20":1406,"PROYECTADO 21":1463,"PLANIFICADO 21":1344,"PRODUCIDO 21":1344,"PROYECTADO 22":1463,"PLANIFICADO 22":1589,"PRODUCIDO 22":1589},{"ALMACEN":"ENEA","SKU QUINTA":393191,"DESCRIPCION QUINTA":"TORTA CUATRO LECHES JUMBO","FAMILIA":"TORTA","TIPO":"FRESCO","PROYECTADO 18":1300,"PLANIFICADO 18":1438,"PRODUCIDO 18":1438,"PROYECTADO 19":2890,"PLANIFICADO 19":2928,"PRODUCIDO 19":2928,"PROYECTADO 20":1300,"PLANIFICADO 20":1379,"PRODUCIDO 20":1218,"PROYECTADO 21":1290.67,"PLANIFICADO 21":1296,"PRODUCIDO 21":1296,"PROYECTADO 22":1290.67,"PLANIFICADO 22":1423,"PRODUCIDO 22":1423},{"ALMACEN":"ENEA","SKU QUINTA":393354,"DESCRIPCION QUINTA":"TORTA SACHER QUINTA","FAMILIA":"TORTA","TIPO":"GORRERI","PROYECTADO 18":4000,"PLANIFICADO 18":4012,"PRODUCIDO 18":4012,"PROYECTADO 19":0,"PLANIFICADO 19":0,"PRODUCIDO 19":0,"PROYECTADO 20":0,"PLANIFICADO 20":0,"PRODUCIDO 20":0,"PROYECTADO 21":4000,"PLANIFICADO 21":3996,"PRODUCIDO 21":3996,"PROYECTADO 22":4000,"PLANIFICADO 22":3846,"PRODUCIDO 22":3846},{"ALMACEN":"ENEA","SKU QUINTA":392488,"DESCRIPCION QUINTA":"PASTEL DE YOGURT","FAMILIA":"PASTEL","TIPO":"FRESCO","PROYECTADO 18":1300,"PLANIFICADO 18":1611,"PRODUCIDO 18":1611,"PROYECTADO 19":1800,"PLANIFICADO 19":1851,"PRODUCIDO 19":1851,"PROYECTADO 20":1300,"PLANIFICADO 20":1824,"PRODUCIDO 20":1824,"PROYECTADO 21":1650,"PLANIFICADO 21":1707,"PRODUCIDO 21":1707,"PROYECTADO 22":1650,"PLANIFICADO 22":1673,"PRODUCIDO 22":1673},{"ALMACEN":"ENEA","SKU QUINTA":393000,"DESCRIPCION QUINTA":"PIE DE LIMON","FAMILIA":"SECO","TIPO":"FRESCO","PROYECTADO 18":900,"PLANIFICADO 18":898,"PRODUCIDO 18":898,"PROYECTADO 19":1800,"PLANIFICADO 19":1141,"PRODUCIDO 19":1141,"PROYECTADO 20":900,"PLANIFICADO 20":989,"PRODUCIDO 20":989,"PROYECTADO 21":950,"PLANIFICADO 21":911,"PRODUCIDO 21":911,"PROYECTADO 22":950,"PLANIFICADO 22":991,"PRODUCIDO 22":991},{"ALMACEN":"ENEA","SKU QUINTA":393429,"DESCRIPCION QUINTA":"PIE DE LIMON FAMILIAR JUMBO","FAMILIA":"SECO","TIPO":"FRESCO","PROYECTADO 18":1900,"PLANIFICADO 18":1732,"PRODUCIDO 18":1732,"PROYECTADO 19":5310,"PLANIFICADO 19":3403,"PRODUCIDO 19":3403,"PROYECTADO 20":1900,"PLANIFICADO 20":1588,"PRODUCIDO 20":1588,"PROYECTADO 21":1800,"PLANIFICADO 21":1465,"PRODUCIDO 21":1465,"PROYECTADO 22":1800,"PLANIFICADO 22":1640,"PRODUCIDO 22":1640},{"ALMACEN":"VESPUCIO","SKU QUINTA":393058,"DESCRIPCION QUINTA":"TORTA CHOCOGUINDA WALMART","FAMILIA":"TORTA","TIPO":"LINEA","PROYECTADO 18":5400,"PLANIFICADO 18":4801,"PRODUCIDO 18":4801,"PROYECTADO 19":5400,"PLANIFICADO 19":6094,"PRODUCIDO 19":6094,"PROYECTADO 20":4860,"PLANIFICADO 20":1920,"PRODUCIDO 20":1920,"PROYECTADO 21":6480,"PLANIFICADO 21":4141,"PRODUCIDO 21":4141,"PROYECTADO 22":3780,"PLANIFICADO 22":3765,"PRODUCIDO 22":3519},{"ALMACEN":"VESPUCIO","SKU QUINTA":393059,"DESCRIPCION QUINTA":"TORTA CREMA MARACUYA WALMART","FAMILIA":"TORTA","TIPO":"LINEA","PROYECTADO 18":2400,"PLANIFICADO 18":400,"PRODUCIDO 18":400,"PROYECTADO 19":3000,"PLANIFICADO 19":4005,"PRODUCIDO 19":3962,"PROYECTADO 20":6000,"PLANIFICADO 20":3090,"PRODUCIDO 20":1890,"PROYECTADO 21":3000,"PLANIFICADO 21":2332,"PRODUCIDO 21":2208,"PROYECTADO 22":1680,"PLANIFICADO 22":1269,"PRODUCIDO 22":1269},{"ALMACEN":"VESPUCIO","SKU QUINTA":393100,"DESCRIPCION QUINTA":"PASTEL MANJAR","FAMILIA":"PASTEL","PROYECTADO 18":2240,"PLANIFICADO 18":1394,"PRODUCIDO 18":274,"PROYECTADO 19":2240,"PLANIFICADO 19":950,"PRODUCIDO 19":950,"PROYECTADO 20":2240,"PLANIFICADO 20":1070,"PRODUCIDO 20":1070,"PROYECTADO 21":1120,"PLANIFICADO 21":1120,"PRODUCIDO 21":96,"PROYECTADO 22":1120,"PLANIFICADO 22":1400,"PRODUCIDO 22":1400},{"ALMACEN":"VESPUCIO","SKU QUINTA":393200,"DESCRIPCION QUINTA":"KUCHEN MANZANA","FAMILIA":"KUCHEN","PROYECTADO 18":3000,"PLANIFICADO 18":3314,"PRODUCIDO 18":2714,"PROYECTADO 19":4200,"PLANIFICADO 19":3213,"PRODUCIDO 19":3003,"PROYECTADO 20":3600,"PLANIFICADO 20":588,"PRODUCIDO 20":588,"PROYECTADO 21":1200,"PLANIFICADO 21":1284,"PRODUCIDO 21":1284,"PROYECTADO 22":4200,"PLANIFICADO 22":3216,"PRODUCIDO 22":3192},{"ALMACEN":"VESPUCIO","SKU QUINTA":393300,"DESCRIPCION QUINTA":"INSUMO SEMIELABORADO A","FAMILIA":"INSUMO","PROYECTADO 18":22356,"PLANIFICADO 18":16722,"PRODUCIDO 18":15261,"PROYECTADO 19":25272,"PLANIFICADO 19":29126,"PRODUCIDO 19":29126,"PROYECTADO 20":26244,"PLANIFICADO 20":17492,"PRODUCIDO 20":17492,"PROYECTADO 21":21384,"PLANIFICADO 21":25299,"PRODUCIDO 21":25299,"PROYECTADO 22":37908,"PLANIFICADO 22":38510,"PRODUCIDO 22":37618}];
+
+// ════════════════════════════════════════
+//  ESTADO GLOBAL
+// ════════════════════════════════════════
+let RAW = JSON.parse(JSON.stringify(RAW_DEFAULT));
+let SEMANAS = [];
+let sortCol = null, sortDir = 1;
+let barChartInst, pieChartInst, modalChartInst;
+let FAMILIAS_DETECTADAS = []; // se recalcula en buildFiltroOptions()
+
+// Registrar plugin de datalabels para que la info de los gráficos
+// se vea siempre, sin necesidad de pasar el mouse por encima
+if (window.ChartDataLabels) {
+  Chart.register(window.ChartDataLabels);
+}
+const dataLabelFmt = v => `${(v||0).toLocaleString('es-CL')} und`;
+
+const CHART_TITLES = {
+  barChart: 'Proyectado · Programado · Elaborado por semana',
+  pieChart: 'Composición elaborado'
+};
+
+const FAM_COLORS = {
+  TORTA:'#5090f0', PASTEL:'#3dd68c', KUCHEN:'#f0a030',
+  INSUMO:'#9060f0', SECO:'#f05050'
+};
+const FAM_COLORS_FALLBACK = ['#30d0b0','#f06292','#7c8cf8','#c8d050','#f59e6c','#52b8e8'];
+function colorFamilia(f, idx) {
+  return FAM_COLORS[f] || FAM_COLORS_FALLBACK[idx % FAM_COLORS_FALLBACK.length];
+}
+
+// ════════════════════════════════════════
+//  UTILIDADES
+// ════════════════════════════════════════
+function fmt(n) { return Math.round(n).toLocaleString('es-CL'); }
+function pct(prod, base) { if (!base) return 0; return Math.round((prod / base) * 100); }
+function clsPct(p) { return p >= 95 ? 'pct-good' : p >= 80 ? 'pct-warn' : 'pct-bad'; }
+function colorPct(p) { return p >= 95 ? 'var(--green)' : p >= 80 ? 'var(--amber)' : 'var(--red)'; }
+function sum(arr, key) { return arr.reduce((a,r) => a + (r[key]||0), 0); }
+
+function detectSemanas(data) {
+  const s = new Set();
+  data.forEach(r => {
+    Object.keys(r).forEach(k => {
+      const m = k.match(/^PRODUCIDO (\d+)$/);
+      if (m) s.add(parseInt(m[1]));
+    });
+  });
+  return [...s].sort((a,b)=>a-b);
+}
+
+// ════════════════════════════════════════
+//  TABS DE SEMANA
+// ════════════════════════════════════════
+function buildTabs() {
+  const cont = document.getElementById('semanaTabs');
+  let html = `<button class="stab active" data-s="TODAS">Todas</button>`;
+  SEMANAS.forEach(s => { html += `<button class="stab" data-s="${s}">S${s}</button>`; });
+  cont.innerHTML = html;
+  cont.querySelectorAll('.stab').forEach(b => b.addEventListener('click', () => {
+    cont.querySelectorAll('.stab').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    render();
+  }));
+  // badge
+  if (SEMANAS.length) {
+    document.getElementById('weekBadge').textContent =
+      `SEMANAS ${SEMANAS[0]} – ${SEMANAS[SEMANAS.length-1]} · ${new Date().getFullYear()}`;
+  }
+}
+
+function getActiveSemana() {
+  const active = document.querySelector('.stab.active');
+  return active ? active.dataset.s : 'TODAS';
+}
+
+// ════════════════════════════════════════
+//  OPCIONES DINÁMICAS DE FILTROS (Familia / Tipo)
+// ════════════════════════════════════════
+// Se reconstruyen a partir de los valores REALES presentes en los datos
+// cargados (RAW), para que nunca falte una opción del Excel y así
+// ningún producto quede oculto/perdido al aplicar un filtro.
+const FAMILIA_LABELS = { TORTA:'Torta', PASTEL:'Pastel', KUCHEN:'Kuchen', INSUMO:'Insumo', SECO:'Seco' };
+const TIPO_LABELS = { FRESCO:'Fresco', CONGELADO:'Congelado', GORRERI:'Gorreri', LINEA:'Línea' };
+
+function tituloCase(s) {
+  return s.replace(/\w\S*/g, t => t.charAt(0).toUpperCase() + t.slice(1).toLowerCase());
+}
+
+function poblarSelectDinamico(selectEl, valores, labelMap, labelVacio) {
+  const valorPrevio = selectEl.value;
+  const unicos = [...new Set(valores.map(v => (v||'').toUpperCase().trim()))];
+  const conValor = unicos.filter(v => v !== '').sort((a,b)=>a.localeCompare(b));
+  const sinValor = unicos.some(v => v === '');
+
+  let html = `<option value="TODOS">${selectEl.dataset.allLabel||'Todos'}</option>`;
+  conValor.forEach(v => { html += `<option value="${v}">${labelMap[v] || tituloCase(v)}</option>`; });
+  if (sinValor) html += `<option value="__VACIO__">${labelVacio}</option>`;
+  selectEl.innerHTML = html;
+
+  // Mantener la selección previa si sigue siendo una opción válida; si no, volver a TODOS
+  const opcionesValidas = [...selectEl.options].map(o => o.value);
+  selectEl.value = opcionesValidas.includes(valorPrevio) ? valorPrevio : 'TODOS';
+}
+
+function buildFiltroOptions() {
+  const familias = RAW.map(r => r.FAMILIA || '');
+  const tipos = RAW.map(r => r.TIPO || '');
+
+  FAMILIAS_DETECTADAS = [...new Set(familias.map(f => f.toUpperCase().trim()).filter(f => f !== ''))].sort((a,b)=>a.localeCompare(b));
+
+  const fFamilia = document.getElementById('fFamilia');
+  fFamilia.dataset.allLabel = 'Todas';
+  poblarSelectDinamico(fFamilia, familias, FAMILIA_LABELS, 'Sin familia');
+
+  const fTipo = document.getElementById('fTipo');
+  fTipo.dataset.allLabel = 'Todos los tipos';
+  poblarSelectDinamico(fTipo, tipos, TIPO_LABELS, 'Sin tipo');
+
+  const fTipoProy = document.getElementById('fTipoProy');
+  fTipoProy.dataset.allLabel = 'Todos los tipos';
+  poblarSelectDinamico(fTipoProy, tipos, TIPO_LABELS, 'Sin tipo');
+}
+
+// ════════════════════════════════════════
+//  LECTURA EXCEL
+// ════════════════════════════════════════
+function handleFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  showLoader(true);
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const wb = XLSX.read(ev.target.result, {type:'binary'});
+      const parsed = [];
+      wb.SheetNames.forEach(sheetName => {
+        const ws = wb.Sheets[sheetName];
+        // El Excel tiene 2 filas de encabezado:
+        //   Fila 1: agrupadores "SEMANA 18", "SEMANA 19"... (no útiles)
+        //   Fila 2: nombres reales "SKU QUINTA","PROYECTADO 18","PLANIFICADO 18"...
+        // Leemos todo como arrays y usamos la fila índice 1 como headers.
+        const allRows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+        if (allRows.length < 2) return;
+        const headers = allRows[1].map(h => String(h||'').trim().toUpperCase());
+        for (let i = 2; i < allRows.length; i++) {
+          const cells = allRows[i];
+          if (!cells || cells.every(c => c === '' || c === null || c === undefined)) continue;
+          const r = {ALMACEN: sheetName.toUpperCase()};
+          headers.forEach((h, idx) => {
+            const v = cells[idx] !== undefined ? cells[idx] : '';
+            if (h === 'SKU QUINTA')               r['SKU QUINTA'] = v;
+            else if (h === 'DESCRIPCION QUINTA')  r['DESCRIPCION QUINTA'] = String(v||'');
+            else if (h === 'FAMILIA')             r['FAMILIA'] = String(v||'').toUpperCase();
+            else if (h === 'TIPO')                r['TIPO'] = String(v||'').toUpperCase();
+            else if (h.startsWith('PROYECTADO'))  r[h] = parseFloat(v)||0;
+            else if (h.startsWith('PLANIFICADO')) r[h] = parseFloat(v)||0;
+            else if (h.startsWith('PRODUCIDO'))   r[h] = parseFloat(v)||0;
+          });
+          if (r['SKU QUINTA'] || r['DESCRIPCION QUINTA']) parsed.push(r);
+        }
+      });
+      RAW = parsed;
+      SEMANAS = detectSemanas(RAW);
+      buildTabs();
+      buildFiltroOptions();
+      render();
+      renderProyecciones();
+      const fs = document.getElementById('fileStatus');
+      document.getElementById('fileStatusText').textContent = file.name;
+      fs.style.display = 'flex';
+      showLoader(false);
+      // ── PERSISTENCIA ──
+      try {
+        localStorage.setItem('produccion_RAW', JSON.stringify(RAW));
+        localStorage.setItem('produccion_fileName', file.name);
+        localStorage.setItem('produccion_savedAt', new Date().toLocaleString('es-CL'));
+      } catch(e) { console.warn('localStorage lleno:', e); }
+    } catch(err) {
+      showLoader(false);
+      alert('Error al leer el archivo: ' + err.message);
+    }
+  };
+  reader.readAsBinaryString(file);
+  e.target.value = '';
+}
+
+function showLoader(v) {
+  document.getElementById('loader').classList.toggle('active', v);
+}
+
+// ════════════════════════════════════════
+//  DRAG & DROP
+// ════════════════════════════════════════
+document.addEventListener('dragover', e => { e.preventDefault(); document.getElementById('dropZone').classList.add('active'); });
+document.addEventListener('dragleave', e => { if (!e.relatedTarget) document.getElementById('dropZone').classList.remove('active'); });
+document.addEventListener('drop', e => {
+  e.preventDefault(); document.getElementById('dropZone').classList.remove('active');
+  const file = e.dataTransfer.files[0];
+  if (file) handleFile({target:{files:[file], value:''}});
+});
+
+// ════════════════════════════════════════
+//  FILTROS BASE
+// ════════════════════════════════════════
+function getFiltered() {
+  const alm = document.getElementById('fAlmacen').value;
+  const fam = document.getElementById('fFamilia').value;
+  let d = RAW;
+  if (alm !== 'TODOS') d = d.filter(r => r.ALMACEN === alm);
+  if (fam === '__VACIO__') d = d.filter(r => !(r.FAMILIA||'').trim());
+  else if (fam !== 'TODOS') d = d.filter(r => r.FAMILIA === fam);
+  return d;
+}
+
+function getActiveSemanas() {
+  const s = getActiveSemana();
+  return s === 'TODAS' ? SEMANAS : [parseInt(s)];
+}
+
+// ════════════════════════════════════════
+//  RENDER PRINCIPAL
+// ════════════════════════════════════════
+function render() {
+  const data = getFiltered();
+  const semanas = getActiveSemanas();
+  renderKPIs(data, semanas);
+  renderCharts(data, semanas);
+  renderFamCards(data, semanas);
+  renderTabla(data, semanas);
+}
+
+// ─── KPIs ───
+function renderKPIs(data, semanas) {
+  let totalProy=0, totalPlan=0, totalProd=0;
+  semanas.forEach(s => {
+    totalProy += sum(data, `PROYECTADO ${s}`);
+    totalPlan += sum(data, `PLANIFICADO ${s}`);
+    totalProd += sum(data, `PRODUCIDO ${s}`);
+  });
+  const cp = pct(totalProd, totalProy);
+  const cpl = pct(totalProd, totalPlan);
+
+  document.getElementById('kpiRow').innerHTML = `
+    <div class="kpi"><div class="kpi-label">Proyectado Total</div><div class="kpi-value">${fmt(totalProy)}</div><div class="kpi-sub">unidades</div></div>
+    <div class="kpi"><div class="kpi-label">Programado Total</div><div class="kpi-value">${fmt(totalPlan)}</div><div class="kpi-sub">unidades</div></div>
+    <div class="kpi"><div class="kpi-label">Elaborado Total</div><div class="kpi-value">${fmt(totalProd)}</div><div class="kpi-sub">unidades</div></div>
+    <div class="kpi ${cp>=95?'good':cp>=80?'warn':'bad'}">
+      <div class="kpi-label">% Cumpl. vs Proyectado</div>
+      <div class="kpi-value">${cp}%</div>
+      <div class="kpi-sub">elaborado / proyectado</div>
+    </div>
+    <div class="kpi ${cpl>=95?'good':cpl>=80?'warn':'bad'}">
+      <div class="kpi-label">% Cumpl. vs Programado</div>
+      <div class="kpi-value">${cpl}%</div>
+      <div class="kpi-sub">elaborado / programado</div>
+    </div>`;
+}
+
+// ─── CHARTS ───
+function renderCharts(data, semanas) {
+  const labels = semanas.map(s=>`S${s}`);
+  const dProy = semanas.map(s=>Math.round(sum(data,`PROYECTADO ${s}`)));
+  const dPlan = semanas.map(s=>Math.round(sum(data,`PLANIFICADO ${s}`)));
+  const dProd = semanas.map(s=>Math.round(sum(data,`PRODUCIDO ${s}`)));
+
+  // Si hay una sola semana seleccionada, mostrar barras (comparación puntual);
+  // si hay varias semanas, mostrar línea de evolución.
+  const esUnaSemana = semanas.length === 1;
+  const tipoChart = esUnaSemana ? 'bar' : 'line';
+
+  if (barChartInst) barChartInst.destroy();
+  barChartInst = new Chart(document.getElementById('barChart'), {
+    type: tipoChart,
+    data: {
+      labels,
+      datasets: esUnaSemana ? [
+        { label:'Proyectado', data:dProy, backgroundColor:'rgba(80,144,240,.75)', borderRadius:4, maxBarThickness:90,
+          datalabels:{ color:'#7ab0f8', anchor:'end', align:'top', offset:4 } },
+        { label:'Programado', data:dPlan, backgroundColor:'rgba(61,214,140,.75)', borderRadius:4, maxBarThickness:90,
+          datalabels:{ color:'#5ae0a0', anchor:'end', align:'top', offset:4 } },
+        { label:'Elaborado',  data:dProd, backgroundColor:'rgba(232,184,75,.85)', borderRadius:4, maxBarThickness:90,
+          datalabels:{ color:'#f0cd78', anchor:'end', align:'top', offset:4 } }
+      ] : [
+        { label:'Proyectado', data:dProy, borderColor:'#5090f0', backgroundColor:'rgba(80,144,240,.12)',
+          pointBackgroundColor:'#5090f0', pointBorderColor:'#0a0a0c', pointBorderWidth:2, pointRadius:4, pointHoverRadius:6,
+          borderWidth:2.5, tension:.35, fill:true,
+          datalabels:{ color:'#7ab0f8', align:'top', offset:6 } },
+        { label:'Programado', data:dPlan, borderColor:'#3dd68c', backgroundColor:'rgba(61,214,140,.12)',
+          pointBackgroundColor:'#3dd68c', pointBorderColor:'#0a0a0c', pointBorderWidth:2, pointRadius:4, pointHoverRadius:6,
+          borderWidth:2.5, tension:.35, fill:true,
+          datalabels:{ color:'#5ae0a0', align:'bottom', offset:6 } },
+        { label:'Elaborado',  data:dProd, borderColor:'#e8b84b', backgroundColor:'rgba(232,184,75,.16)',
+          pointBackgroundColor:'#e8b84b', pointBorderColor:'#0a0a0c', pointBorderWidth:2, pointRadius:4, pointHoverRadius:6,
+          borderWidth:2.5, tension:.35, fill:true,
+          datalabels:{ color:'#f0cd78', align:'top', offset:18 } }
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      interaction:{ mode:'index', intersect:false },
+      layout:{ padding:{ top:18 } },
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'#18181d', borderColor:'rgba(255,255,255,.1)', borderWidth:1,
+          titleFont:{family:'Bebas Neue',size:14}, bodyFont:{family:'DM Sans',size:12},
+          callbacks:{ label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString('es-CL')}` }
+        },
+        datalabels:{
+          font:{family:'JetBrains Mono',size:9,weight:'600'},
+          formatter: v => dataLabelFmt(v)
+        }
+      },
+      scales:{
+        x:{ grid:{color:'rgba(255,255,255,.04)'}, ticks:{color:'#6b6b78',font:{family:'JetBrains Mono',size:11}} },
+        y:{ grid:{color:'rgba(255,255,255,.04)'}, ticks:{color:'#6b6b78',font:{family:'JetBrains Mono',size:10},callback:v=>v.toLocaleString('es-CL')+' und'} }
+      }
+    }
+  });
+
+  const famTot = FAMILIAS_DETECTADAS.map((f,idx)=>{
+    const df = data.filter(r=>r.FAMILIA===f);
+    const p = semanas.reduce((a,s)=>a+sum(df,`PRODUCIDO ${s}`),0);
+    return {f,p:Math.round(p),color:colorFamilia(f,idx)};
+  }).filter(x=>x.p>0);
+
+  if (pieChartInst) pieChartInst.destroy();
+  const famTotSum = famTot.reduce((a,x)=>a+x.p,0);
+  pieChartInst = new Chart(document.getElementById('pieChart'), {
+    type: 'doughnut',
+    data: {
+      labels: famTot.map(x=>x.f),
+      datasets:[{ data:famTot.map(x=>x.p), backgroundColor:famTot.map(x=>x.color), borderWidth:2, borderColor:'#111114' }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false, cutout:'65%',
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'#18181d', borderColor:'rgba(255,255,255,.1)', borderWidth:1,
+          bodyFont:{family:'DM Sans',size:12}
+        },
+        datalabels:{
+          color:'#0a0a0c',
+          font:{family:'JetBrains Mono',size:11,weight:'600'},
+          formatter: v => famTotSum>0 ? Math.round((v/famTotSum)*100)+'%' : '',
+          display: ctx => ctx.dataset.data[ctx.dataIndex] > 0
+        }
+      }
+    }
+  });
+
+  const total = famTot.reduce((a,x)=>a+x.p,0);
+  document.getElementById('pieLegend').innerHTML = famTot.map(x=>{
+    const pp = total>0?Math.round((x.p/total)*100):0;
+    return `<div style="display:flex;align-items:center;gap:8px;">
+      <div style="width:8px;height:8px;border-radius:2px;background:${x.color};flex-shrink:0;"></div>
+      <span style="font-size:12px;color:var(--muted2)">${x.f}</span>
+      <div style="flex:1;height:1px;background:var(--border);margin:0 4px;"></div>
+      <span style="font-family:'JetBrains Mono';font-size:11px;font-weight:600;color:var(--text);">${pp}%</span>
+    </div>`;
+  }).join('');
+}
+
+// ─── FAM CARDS ───
+function renderFamCards(data, semanas) {
+  const fam = document.getElementById('fFamilia').value;
+  let famList;
+  if (fam === 'TODOS') famList = FAMILIAS_DETECTADAS;
+  else if (fam === '__VACIO__') famList = ['']; // se maneja abajo con filtro especial
+  else famList = [fam];
+
+  document.getElementById('famGrid').innerHTML = famList.map(f=>{
+    const df = fam === '__VACIO__' ? data.filter(r=>!(r.FAMILIA||'').trim()) : data.filter(r=>r.FAMILIA===f);
+    if (!df.length) return '';
+    let proy=0, plan=0, prod=0;
+    semanas.forEach(s=>{ proy+=sum(df,`PROYECTADO ${s}`); plan+=sum(df,`PLANIFICADO ${s}`); prod+=sum(df,`PRODUCIDO ${s}`); });
+    const cp = pct(prod, proy);
+    const col = colorPct(cp);
+    const nombre = f || 'SIN FAMILIA';
+    return `<div class="fam-card" style="border-color:${col}22">
+      <div class="fam-card-head">
+        <div class="fam-card-name">${nombre}</div>
+        <div class="fam-card-pct" style="color:${col}">${cp}%</div>
+      </div>
+      <div class="fam-card-rows">
+        <div class="fam-card-row"><span>Proyectado</span><span class="fam-card-val">${fmt(proy)}</span></div>
+        <div class="fam-card-row"><span>Programado</span><span class="fam-card-val">${fmt(plan)}</span></div>
+        <div class="fam-card-row"><span>Elaborado</span><span class="fam-card-val">${fmt(prod)}</span></div>
+      </div>
+      <div class="fam-bar"><div class="fam-fill" style="width:${Math.min(cp,100)}%;background:${col};"></div></div>
+    </div>`;
+  }).join('');
+}
+
+// ─── TABLA ───
+function renderTabla(data, semanas) {
+  const buscar = document.getElementById('buscar').value.toLowerCase();
+  const tipo = document.getElementById('fTipo').value;
+  const sortBy = document.getElementById('fSort').value;
+
+  let rows = data.map(r => {
+    let proy=0, plan=0, prod=0;
+    semanas.forEach(s=>{ proy+=r[`PROYECTADO ${s}`]||0; plan+=r[`PLANIFICADO ${s}`]||0; prod+=r[`PRODUCIDO ${s}`]||0; });
+    const cp = pct(prod, proy);
+    return { ...r, _proy:proy, _plan:plan, _prod:prod, _pend:plan-prod, _cp:cp };
+  });
+
+  if (buscar) rows = rows.filter(r =>
+    (r['DESCRIPCION QUINTA']||'').toLowerCase().includes(buscar) ||
+    String(r['SKU QUINTA']||'').includes(buscar)
+  );
+  if (tipo==='__VACIO__') rows = rows.filter(r=>!(r.TIPO||'').trim());
+  else if (tipo!=='TODOS') rows = rows.filter(r=>(r.TIPO||'')=== tipo);
+  rows = rows.filter(r=>r._proy>0||r._plan>0||r._prod>0);
+
+  // sort
+  const sorts = {
+    pct_asc: (a,b)=>a._cp-b._cp, pct_desc:(a,b)=>b._cp-a._cp,
+    prod_desc:(a,b)=>b._prod-a._prod, prod_asc:(a,b)=>a._prod-b._prod,
+    desc_asc:(a,b)=>(a['DESCRIPCION QUINTA']||'').localeCompare(b['DESCRIPCION QUINTA']||'')
+  };
+  rows.sort(sorts[sortBy]||sorts.pct_asc);
+
+  document.getElementById('filterInfo').textContent = `${rows.length} productos`;
+
+  if (!rows.length) {
+    document.getElementById('tablaBody').innerHTML = `<tr><td colspan="10"><div class="empty">Sin registros para los filtros aplicados</div></td></tr>`;
+    document.getElementById('tablaFooter').textContent = '';
+    return;
+  }
+
+  document.getElementById('tablaBody').innerHTML = rows.map(r=>{
+    const barW = Math.min(r._cp,100);
+    const barColor = r._cp>=95?'var(--green)':r._cp>=80?'var(--amber)':'var(--red)';
+    return `<tr>
+      <td class="num">${r['SKU QUINTA']||'—'}</td>
+      <td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;">${r['DESCRIPCION QUINTA']||'—'}</td>
+      <td><span style="font-size:11px;font-weight:600;color:var(--muted2)">${r.ALMACEN||'—'}</span></td>
+      <td><span class="fam-pill fam-${r.FAMILIA||''}">${r.FAMILIA||'—'}</span></td>
+      <td><span style="font-size:11px;color:var(--muted2)">${r.TIPO||'—'}</span></td>
+      <td class="num">${fmt(r._proy)}</td>
+      <td class="num">${fmt(r._plan)}</td>
+      <td class="num">${fmt(r._prod)}</td>
+      <td class="num" style="color:${r._pend>0?'var(--red)':r._pend<0?'var(--green)':'var(--muted)'}">
+        ${r._pend>=0?'-':'+'}${fmt(Math.abs(r._pend))}
+      </td>
+      <td class="pct">
+        <div class="bar-cell">
+          <div class="mini-bar-bg"><div class="mini-bar-fill" style="width:${barW}%;background:${barColor};"></div></div>
+          <span class="${clsPct(r._cp)}">${r._cp}%</span>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  const totalProd = rows.reduce((a,r)=>a+r._prod,0);
+  const totalPlan = rows.reduce((a,r)=>a+r._plan,0);
+  const gCP = pct(totalProd, totalPlan);
+  document.getElementById('tablaFooter').textContent =
+    `${rows.length} productos · Total elaborado: ${fmt(totalProd)} · Total programado: ${fmt(totalPlan)} · Cumpl. global: ${gCP}%`;
+}
+
+// ════════════════════════════════════════
+//  PROYECCIÓN SIGUIENTE SEMANA (según lo producido históricamente)
+// ════════════════════════════════════════
+// Calcula cuánto convendría proyectar la próxima semana tomando como
+// base SOLO lo realmente PRODUCIDO, usando una ventana de las
+// ÚLTIMAS 4 SEMANAS *anteriores* a la última semana disponible
+// (la última semana del histórico se excluye del cálculo).
+// Ejemplo: si el histórico llega hasta S25, la ventana de cálculo
+// es S21–S24 (4 semanas), y la proyección resultante es la sugerencia
+// para la semana siguiente a esa ventana (S25).
+// Dentro de esa ventana, además se EXCLUYEN las semanas en cero
+// (sin producción), considerando solo las semanas con producción real.
+// Combina:
+//   - Promedio ponderado de lo producido en esas semanas (más peso a las más recientes)
+//   - Tendencia (regresión lineal simple) sobre esa misma serie filtrada
+// para suavizar variaciones puntuales y reflejar la tendencia reciente.
+// Ventana de cálculo: últimas 4 semanas ANTERIORES a la última semana disponible
+// (excluye la última semana del histórico). Ej: si semanas = [18..25], ventana = [21,22,23,24]
+function getVentanaProyeccion(semanas) {
+  const semanasOrdenadas = [...semanas].sort((a,b)=>a-b);
+  const semanasSinUltima = semanasOrdenadas.slice(0, -1);
+  return semanasSinUltima.slice(-4);
+}
+
+function proyectarSiguienteSemana(r, semanas) {
+  if (!semanas.length) return null;
+
+  const ventana = getVentanaProyeccion(semanas);
+  if (!ventana.length) return null;
+
+  // Serie de producción real dentro de la ventana, SOLO semanas con producción efectiva (PRODUCIDO > 0)
+  const valoresProd = ventana
+    .map(s => r[`PRODUCIDO ${s}`] || 0)
+    .filter(v => v > 0);
+
+  if (!valoresProd.length) return null;
+
+  const n = valoresProd.length;
+  if (n === 1) return Math.round(valoresProd[0]);
+
+  const promedio = valoresProd.reduce((a, v) => a + v, 0) / n;
+
+  // Tendencia: regresión lineal simple sobre las semanas CON producción (x = índice, y = producido)
+  const xs = valoresProd.map((_, i) => i);
+  const xMean = xs.reduce((a, v) => a + v, 0) / n;
+  let num = 0, den = 0;
+  xs.forEach((x, i) => { num += (x - xMean) * (valoresProd[i] - promedio); den += (x - xMean) ** 2; });
+  const pendiente = den !== 0 ? num / den : 0;
+  const tendencia = promedio + pendiente * (n - xMean); // proyección en el siguiente punto (n)
+
+  // Promedio ponderado de lo producido en semanas con producción: más peso a las más recientes
+  let sumPond = 0, sumPesos = 0;
+  valoresProd.forEach((v, i) => { const peso = i + 1; sumPond += v * peso; sumPesos += peso; });
+  const promPonderado = sumPesos > 0 ? sumPond / sumPesos : promedio;
+
+  // Mezcla: 60% promedio ponderado de lo producido + 40% tendencia de lo producido
+  let proyeccion = 0.6 * promPonderado + 0.4 * tendencia;
+  if (proyeccion < 0) proyeccion = promPonderado;
+  return Math.round(proyeccion);
+}
+
+// ════════════════════════════════════════
+//  TABLA PROYECCIONES COMPLETA (sin filtros globales)
+// ════════════════════════════════════════
+function renderProyecciones() {
+  const buscar = document.getElementById('buscarProy').value.toLowerCase();
+  const almacen = document.getElementById('fAlmacenProy').value;
+  const tipo = document.getElementById('fTipoProy').value;
+
+  // Filtros propios solamente (no los globales)
+  let rows = RAW.filter(r => {
+    if (almacen !== 'TODOS' && r.ALMACEN !== almacen) return false;
+    if (tipo === '__VACIO__') { if ((r.TIPO||'').trim()) return false; }
+    else if (tipo !== 'TODOS' && (r.TIPO||'') !== tipo) return false;
+    if (buscar) {
+      const desc = (r['DESCRIPCION QUINTA']||'').toLowerCase();
+      const sku  = String(r['SKU QUINTA']||'');
+      if (!desc.includes(buscar) && !sku.includes(buscar)) return false;
+    }
+    // Excluir filas completamente en cero
+    const tieneAlgo = SEMANAS.some(s => (r[`PROYECTADO ${s}`]||0) > 0);
+    return tieneAlgo;
+  });
+
+  // Cabecera dinámica según semanas detectadas
+  const thead = document.getElementById('tablaProyHead');
+  let thSemanas = SEMANAS.map(s =>
+    `<th class="num" colspan="2" style="text-align:center;border-left:1px solid rgba(232,184,75,.15);background:rgba(232,184,75,.04);color:var(--gold);letter-spacing:.06em;">S${s}</th>`
+  ).join('');
+  // Sub-cabecera
+  let thSub = SEMANAS.map(s =>
+    `<th class="num" style="border-left:1px solid rgba(232,184,75,.08);">Proy.</th><th class="num">Prod.</th>`
+  ).join('');
+
+  thead.innerHTML = `
+    <tr>
+      <th rowspan="2" style="width:75px;vertical-align:middle;">SKU</th>
+      <th rowspan="2" style="vertical-align:middle;">Descripción</th>
+      <th rowspan="2" style="vertical-align:middle;">Almacén</th>
+      <th rowspan="2" style="vertical-align:middle;">Tipo</th>
+      ${thSemanas}
+      <th rowspan="2" class="num" style="vertical-align:middle;border-left:2px solid rgba(61,214,140,.35);background:rgba(61,214,140,.06);color:var(--green);min-width:120px;">
+        Proyección<br><span style="font-size:9px;font-weight:400;color:var(--muted2);text-transform:none;letter-spacing:0;">según producido</span>
+      </th>
+    </tr>
+    <tr style="border-top:1px solid var(--border);">
+      ${thSub}
+      <th style="border-left:2px solid rgba(61,214,140,.35);background:rgba(61,214,140,.06);"></th>
+    </tr>`;
+
+  document.getElementById('proyFooter2').textContent = `${rows.length} productos`;
+
+  if (!rows.length) {
+    document.getElementById('tablaProyBody').innerHTML =
+      `<tr><td colspan="${5 + SEMANAS.length * 2}"><div class="empty">Sin resultados</div></td></tr>`;
+    document.getElementById('tablaProyFooter').textContent = '';
+    return;
+  }
+
+  document.getElementById('tablaProyBody').innerHTML = rows.map(r => {
+    const celdas = SEMANAS.map(s => {
+      const proy = r[`PROYECTADO ${s}`] || 0;
+      const prod = r[`PRODUCIDO ${s}`]  || 0;
+      const cp   = pct(prod, proy);
+      const col  = proy > 0 ? (cp >= 95 ? 'var(--green)' : cp >= 80 ? 'var(--amber)' : 'var(--red)') : 'var(--muted)';
+      const proyStr = proy > 0 ? fmt(proy) : '<span style="color:var(--muted)">—</span>';
+      const prodStr = proy > 0
+        ? `<span style="color:${col};font-weight:600;">${fmt(prod)}</span>`
+        : '<span style="color:var(--muted)">—</span>';
+      return `<td class="num" style="border-left:1px solid rgba(232,184,75,.08);">${proyStr}</td><td class="num">${prodStr}</td>`;
+    }).join('');
+
+    const proyeccionFutura = proyectarSiguienteSemana(r, SEMANAS);
+    const ventanaCalc = getVentanaProyeccion(SEMANAS);
+    const ventanaTxt = ventanaCalc.length ? `S${ventanaCalc[0]} a S${ventanaCalc[ventanaCalc.length-1]}` : '—';
+    const sigSemana = SEMANAS.length ? SEMANAS[SEMANAS.length - 1] : '';
+    const proyFuturaStr = proyeccionFutura !== null
+      ? `<span style="color:var(--green);font-weight:700;">${fmt(proyeccionFutura)}</span>`
+      : '<span style="color:var(--muted)">—</span>';
+
+    return `<tr>
+      <td class="num">${r['SKU QUINTA']||'—'}</td>
+      <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;">${r['DESCRIPCION QUINTA']||'—'}</td>
+      <td><span style="font-size:11px;font-weight:600;color:var(--muted2)">${r.ALMACEN||'—'}</span></td>
+      <td><span style="font-size:11px;color:var(--muted2)">${r.TIPO||'—'}</span></td>
+      ${celdas}
+      <td class="num" style="border-left:2px solid rgba(61,214,140,.35);background:rgba(61,214,140,.04);" title="Proyección sugerida para S${sigSemana} calculada con la producción real de ${ventanaTxt} (se excluyen semanas en cero dentro de esa ventana)">${proyFuturaStr}</td>
+    </tr>`;
+  }).join('');
+
+  const ventanaFooter = getVentanaProyeccion(SEMANAS);
+  const ventanaFooterTxt = ventanaFooter.length ? `S${ventanaFooter[0]} a S${ventanaFooter[ventanaFooter.length-1]}` : '—';
+  document.getElementById('tablaProyFooter').textContent =
+    `${rows.length} productos · ${SEMANAS.length} semanas · Proyección S${SEMANAS.length ? SEMANAS[SEMANAS.length-1] : ''} calculada con producción de ${ventanaFooterTxt} (excluye ceros)`;
+}
+
+// ════════════════════════════════════════
+//  MODAL GRÁFICO AMPLIADO
+// ════════════════════════════════════════
+function openChartModal(sourceId) {
+  const sourceInst = sourceId === 'barChart' ? barChartInst : pieChartInst;
+  if (!sourceInst) return;
+
+  document.getElementById('chartModalTitle').textContent = CHART_TITLES[sourceId] || 'Gráfico';
+  document.getElementById('chartModalOverlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+
+  // Leyenda propia en el modal (independiente de la del card)
+  const legendEl = document.getElementById('chartModalLegend');
+  if (sourceId === 'pieChart') {
+    const labels = sourceInst.data.labels;
+    const colors = sourceInst.data.datasets[0].backgroundColor;
+    legendEl.innerHTML = labels.map((label, i) =>
+      `<div class="legend-item" style="font-size:13px;"><div class="legend-dot" style="background:${colors[i]||'#888'};width:10px;height:10px;"></div>${label}</div>`
+    ).join('');
+  } else {
+    legendEl.innerHTML = sourceInst.data.datasets.map(ds =>
+      `<div class="legend-item" style="font-size:13px;"><div class="legend-dot" style="background:${ds.borderColor||ds.backgroundColor};width:10px;height:10px;"></div>${ds.label}</div>`
+    ).join('');
+  }
+
+  if (modalChartInst) { modalChartInst.destroy(); modalChartInst = null; }
+  const ctx = document.getElementById('modalChartCanvas');
+
+  if (sourceId === 'barChart') {
+    const tipoActual = sourceInst.config.type; // 'bar' (1 semana) o 'line' (varias semanas)
+    const labels = sourceInst.data.labels.slice();
+    const dProy = sourceInst.data.datasets[0].data.slice();
+    const dPlan = sourceInst.data.datasets[1].data.slice();
+    const dProd = sourceInst.data.datasets[2].data.slice();
+
+    const datasetsLine = [
+      { label:'Proyectado', data:dProy, borderColor:'#5090f0', backgroundColor:'rgba(80,144,240,.12)',
+        pointBackgroundColor:'#5090f0', pointBorderColor:'#0a0a0c', pointBorderWidth:2, pointRadius:5, pointHoverRadius:7,
+        borderWidth:3, tension:.35, fill:true,
+        datalabels:{ color:'#7ab0f8', align:'top', offset:8, font:{family:'JetBrains Mono',size:12,weight:'600'} } },
+      { label:'Programado', data:dPlan, borderColor:'#3dd68c', backgroundColor:'rgba(61,214,140,.12)',
+        pointBackgroundColor:'#3dd68c', pointBorderColor:'#0a0a0c', pointBorderWidth:2, pointRadius:5, pointHoverRadius:7,
+        borderWidth:3, tension:.35, fill:true,
+        datalabels:{ color:'#5ae0a0', align:'bottom', offset:8, font:{family:'JetBrains Mono',size:12,weight:'600'} } },
+      { label:'Elaborado',  data:dProd, borderColor:'#e8b84b', backgroundColor:'rgba(232,184,75,.16)',
+        pointBackgroundColor:'#e8b84b', pointBorderColor:'#0a0a0c', pointBorderWidth:2, pointRadius:5, pointHoverRadius:7,
+        borderWidth:3, tension:.35, fill:true,
+        datalabels:{ color:'#f0cd78', align:'top', offset:24, font:{family:'JetBrains Mono',size:12,weight:'600'} } }
+    ];
+    const datasetsBar = [
+      { label:'Proyectado', data:dProy, backgroundColor:'rgba(80,144,240,.75)', borderRadius:5, maxBarThickness:140,
+        datalabels:{ color:'#7ab0f8', anchor:'end', align:'top', offset:4, font:{family:'JetBrains Mono',size:13,weight:'600'} } },
+      { label:'Programado', data:dPlan, backgroundColor:'rgba(61,214,140,.75)', borderRadius:5, maxBarThickness:140,
+        datalabels:{ color:'#5ae0a0', anchor:'end', align:'top', offset:4, font:{family:'JetBrains Mono',size:13,weight:'600'} } },
+      { label:'Elaborado',  data:dProd, backgroundColor:'rgba(232,184,75,.85)', borderRadius:5, maxBarThickness:140,
+        datalabels:{ color:'#f0cd78', anchor:'end', align:'top', offset:4, font:{family:'JetBrains Mono',size:13,weight:'600'} } }
+    ];
+
+    modalChartInst = new Chart(ctx, {
+      type: tipoActual,
+      data: { labels, datasets: tipoActual === 'bar' ? datasetsBar : datasetsLine },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        interaction:{ mode:'index', intersect:false },
+        layout:{ padding:{ top:26 } },
+        plugins:{
+          legend:{display:false},
+          tooltip:{
+            backgroundColor:'#18181d', borderColor:'rgba(255,255,255,.1)', borderWidth:1,
+            titleFont:{family:'Bebas Neue',size:15}, bodyFont:{family:'DM Sans',size:13},
+            callbacks:{ label: c => ` ${c.dataset.label}: ${c.parsed.y.toLocaleString('es-CL')}` }
+          },
+          datalabels:{ font:{family:'JetBrains Mono',size:12,weight:'600'}, formatter: v => dataLabelFmt(v) }
+        },
+        scales:{
+          x:{ grid:{color:'rgba(255,255,255,.04)'}, ticks:{color:'#6b6b78',font:{family:'JetBrains Mono',size:13}} },
+          y:{ grid:{color:'rgba(255,255,255,.04)'}, ticks:{color:'#6b6b78',font:{family:'JetBrains Mono',size:12},callback:v=>v.toLocaleString('es-CL')+' und'} }
+        }
+      }
+    });
+  } else if (sourceId === 'pieChart') {
+    const labels = sourceInst.data.labels.slice();
+    const values = sourceInst.data.datasets[0].data.slice();
+    const colors = sourceInst.data.datasets[0].backgroundColor.slice();
+    const total = values.reduce((a,v)=>a+v,0);
+    modalChartInst = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels,
+        datasets:[{ data:values, backgroundColor:colors, borderWidth:3, borderColor:'#111114' }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false, cutout:'62%',
+        plugins:{
+          legend:{display:false},
+          tooltip:{ backgroundColor:'#18181d', borderColor:'rgba(255,255,255,.1)', borderWidth:1, bodyFont:{family:'DM Sans',size:13} },
+          datalabels:{
+            color:'#0a0a0c',
+            font:{family:'JetBrains Mono',size:15,weight:'600'},
+            formatter: v => total>0 ? Math.round((v/total)*100)+'%' : '',
+            display: c => c.dataset.data[c.dataIndex] > 0
+          }
+        }
+      }
+    });
+  }
+}
+
+function closeChartModal() {
+  document.getElementById('chartModalOverlay').classList.remove('active');
+  document.body.style.overflow = '';
+  if (modalChartInst) { modalChartInst.destroy(); modalChartInst = null; }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeChartModal();
+});
+
+function descargar() {
+  const html = document.documentElement.outerHTML;
+  const blob = new Blob([html], {type:'text/html;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  const now = new Date();
+  a.download = `NS_Produccion_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.html`;
+  a.click();
+}
+
+// ════════════════════════════════════════
+//  EVENTOS
+// ════════════════════════════════════════
+['fAlmacen','fFamilia','fSort','buscar','fTipo'].forEach(id =>
+  document.getElementById(id).addEventListener('change', render)
+);
+document.getElementById('buscar').addEventListener('input', render);
+
+// Eventos tabla proyecciones (independientes)
+['fAlmacenProy','fTipoProy'].forEach(id =>
+  document.getElementById(id).addEventListener('change', renderProyecciones)
+);
+document.getElementById('buscarProy').addEventListener('input', renderProyecciones);
+
+// ════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════
+(function restoreFromStorage() {
+  try {
+    const saved = localStorage.getItem('produccion_RAW');
+    const name  = localStorage.getItem('produccion_fileName');
+    const savedAt = localStorage.getItem('produccion_savedAt');
+    if (saved) {
+      RAW = JSON.parse(saved);
+      SEMANAS = detectSemanas(RAW);
+      buildTabs();
+      buildFiltroOptions();
+      render();
+      renderProyecciones();
+      const fs = document.getElementById('fileStatus');
+      document.getElementById('fileStatusText').textContent = (name || 'Archivo guardado') + (savedAt ? '  ·  ' + savedAt : '');
+      fs.style.display = 'flex';
+      return;
+    }
+  } catch(e) { console.warn('Error restaurando datos:', e); }
+  SEMANAS = detectSemanas(RAW);
+  buildTabs();
+  buildFiltroOptions();
+  render();
+  renderProyecciones();
+})();
+</script>
+</body>
+</html>
