@@ -637,14 +637,14 @@ function toggleExpand(key){
 
 // ── DOWNLOAD UPDATED DASHBOARD ──────────────────────────────────────────────
 function downloadUpdatedDashboard(){
-  // Serialize currentData and currentProductos into the HTML and trigger download
   const rawDataNew = JSON.stringify(currentData);
   const rawProdNew = JSON.stringify(currentProductos);
+  const fechaActual = document.getElementById('fechaHeader').textContent || new Date().toLocaleDateString('es-CL',{day:'2-digit',month:'short',year:'numeric'});
   const html = document.documentElement.outerHTML;
-  // Replace the data variables
   const updated = html
     .replace(/let rawData = \[[\s\S]*?\];/, 'let rawData = ' + rawDataNew + ';')
-    .replace(/let rawProductos = \[[\s\S]*?\];/, 'let rawProductos = ' + rawProdNew + ';');
+    .replace(/let rawProductos = \[[\s\S]*?\];/, 'let rawProductos = ' + rawProdNew + ';')
+    .replace(/\.textContent='[^']*';/, ".textContent='" + fechaActual + "';");
   const blob = new Blob([updated], {type:'text/html;charset=utf-8'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');

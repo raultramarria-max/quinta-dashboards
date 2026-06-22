@@ -1625,35 +1625,15 @@ function processFile(file) {
 // DESCARGAR DASHBOARD ACTUALIZADO
 // ═══════════════════════════════════════════════════
 function downloadUpdated() {
-  // Obtiene el HTML completo de la página actual
-  const html = document.documentElement.outerHTML;
-
-  // Serializa allData en un bloque JSON incrustado
+  // Reemplaza EMBEDDED_DATA con los datos actuales y descarga el HTML listo
   const jsonData = JSON.stringify(allData);
-
-  // Inyecta un script de arranque que precarga los datos sin necesitar el Excel
-  const injection = `<script id="__preloaded__">
-(function(){
-  var _pre = ${jsonData};
-  document.addEventListener('DOMContentLoaded', function(){
-    if(typeof allData !== 'undefined' && _pre.length){
-      allData = _pre;
-      if(typeof resetFilters==='function') resetFilters();
-      if(typeof buildFilters==='function') buildFilters();
-      if(typeof applyFilters==='function') applyFilters();
-      var st = document.getElementById('uploadStatus');
-      if(st) st.textContent = 'Datos precargados — puedes cargar un nuevo Excel para actualizar';
-    }
-  });
-})();
-<\/script>`;
-
-  // Inserta antes del cierre de </body>, evita duplicar si ya existe
-  let output = html.replace(/<script id="__preloaded__">[\s\S]*?<\/script>/, '');
-  output = output.replace('</body>', injection + '\n</body>');
-
+  const html = document.documentElement.outerHTML;
+  const updated = html.replace(
+    /const EMBEDDED_DATA = \[[\s\S]*?\]/,
+    'const EMBEDDED_DATA = ' + jsonData
+  );
   const fecha = new Date().toLocaleDateString('es-CL',{day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'-');
-  const blob = new Blob([output], { type: 'text/html;charset=utf-8' });
+  const blob = new Blob([updated], { type: 'text/html;charset=utf-8' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
   a.href     = url;
