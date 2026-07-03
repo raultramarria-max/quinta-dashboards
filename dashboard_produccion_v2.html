@@ -579,6 +579,18 @@ const RAW_DEFAULT = [{"ALMACEN":"ENEA","SKU QUINTA":393141,"DESCRIPCION QUINTA":
 //  ESTADO GLOBAL
 // ════════════════════════════════════════
 let RAW = JSON.parse(JSON.stringify(RAW_DEFAULT));
+
+// ═══ PERSISTENCIA LOCAL (IndexedDB + BUILD_ID) ═══════════════════════════════
+// Al subir un Excel, los datos quedan guardados en el navegador (IndexedDB).
+// Al reabrir ESTE MISMO archivo HTML se restaura automáticamente la última carga.
+// Un archivo descargado con "Descargar dashboard actualizado" trae un BUILD_ID
+// nuevo, por lo que siempre muestra sus datos embebidos e ignora cargas antiguas.
+const BUILD_ID = 'B20260703_PROD_v1';
+const PERSIST_KEY = 'produccion';
+function __idbOpen(){ return new Promise(function(res,rej){ try{ var r=indexedDB.open('quinta_dashboards',1); r.onupgradeneeded=function(){ r.result.createObjectStore('datos'); }; r.onsuccess=function(){ res(r.result); }; r.onerror=function(){ rej(r.error); }; }catch(e){ rej(e); } }); }
+function persistSave(payload){ return __idbOpen().then(function(db){ return new Promise(function(res,rej){ var tx=db.transaction('datos','readwrite'); tx.objectStore('datos').put({buildId:BUILD_ID,savedAt:new Date().toISOString(),payload:payload},PERSIST_KEY); tx.oncomplete=res; tx.onerror=function(){ rej(tx.error); }; }); }).catch(function(e){ console.warn('Persistencia: no se pudo guardar',e); }); }
+function persistClear(){ return __idbOpen().then(function(db){ return new Promise(function(res){ var tx=db.transaction('datos','readwrite'); tx.objectStore('datos').delete(PERSIST_KEY); tx.oncomplete=res; tx.onerror=res; }); }).catch(function(){}); }
+function persistLoad(){ return __idbOpen().then(function(db){ return new Promise(function(res,rej){ var rq=db.transaction('datos','readonly').objectStore('datos').get(PERSIST_KEY); rq.onsuccess=function(){ res(rq.result); }; rq.onerror=function(){ rej(rq.error); }; }); }).then(function(rec){ if(rec && rec.buildId===BUILD_ID) return rec; if(rec) persistClear(); return null; }).catch(function(e){ console.warn('Persistencia: no disponible',e); return null; }); }
 let SEMANAS = [];
 let sortCol = null, sortDir = 1;
 let barChartInst, pieChartInst, modalChartInst;
@@ -746,12 +758,7 @@ function handleFile(e) {
       document.getElementById('fileStatusText').textContent = file.name;
       fs.style.display = 'flex';
       showLoader(false);
-      // ── PERSISTENCIA ──
-      try {
-        localStorage.setItem('produccion_RAW', JSON.stringify(RAW));
-        localStorage.setItem('produccion_fileName', file.name);
-        localStorage.setItem('produccion_savedAt', new Date().toLocaleString('es-CL'));
-      } catch(e) { console.warn('localStorage lleno:', e); }
+      persistSave({data: RAW, fileName: file.name});
     } catch(err) {
       showLoader(false);
       alert('Error al leer el archivo: ' + err.message);
@@ -1313,7 +1320,10 @@ document.addEventListener('keydown', e => {
 });
 
 function descargar() {
-  const html = document.documentElement.outerHTML;
+  // Embebe los datos actuales y un BUILD_ID nuevo en el archivo descargado
+  const html = document.documentElement.outerHTML
+    .replace(/const RAW_DEFAULT = \[[\s\S]*?\];/, 'const RAW_DEFAULT = ' + JSON.stringify(RAW) + ';')
+    .replace(/BUILD_ID = '[^']+'/, "BUILD_ID = 'B" + Date.now() + "'");
   const blob = new Blob([html], {type:'text/html;charset=utf-8'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -1340,28 +1350,25 @@ document.getElementById('buscarProy').addEventListener('input', renderProyeccion
 //  INIT
 // ════════════════════════════════════════
 (function restoreFromStorage() {
+  // Limpieza de restos antiguos de localStorage (mecanismo anterior)
   try {
-    const saved = localStorage.getItem('produccion_RAW');
-    const name  = localStorage.getItem('produccion_fileName');
-    const savedAt = localStorage.getItem('produccion_savedAt');
-    if (saved) {
-      RAW = JSON.parse(saved);
-      SEMANAS = detectSemanas(RAW);
-      buildTabs();
-      buildFiltroOptions();
-      render();
-      renderProyecciones();
-      const fs = document.getElementById('fileStatus');
-      document.getElementById('fileStatusText').textContent = (name || 'Archivo guardado') + (savedAt ? '  ·  ' + savedAt : '');
-      fs.style.display = 'flex';
-      return;
+    localStorage.removeItem('produccion_RAW');
+    localStorage.removeItem('produccion_fileName');
+    localStorage.removeItem('produccion_savedAt');
+  } catch(e) {}
+  persistLoad().then(function(rec){
+    if (rec && rec.payload && rec.payload.data && rec.payload.data.length) {
+      RAW = rec.payload.data;
+      var fs = document.getElementById('fileStatus');
+      var ft = document.getElementById('fileStatusText');
+      if (fs && ft) { ft.textContent = (rec.payload.fileName || 'Última carga') + ' (restaurado)'; fs.style.display = 'flex'; }
     }
-  } catch(e) { console.warn('Error restaurando datos:', e); }
-  SEMANAS = detectSemanas(RAW);
-  buildTabs();
-  buildFiltroOptions();
-  render();
-  renderProyecciones();
+    SEMANAS = detectSemanas(RAW);
+    buildTabs();
+    buildFiltroOptions();
+    render();
+    renderProyecciones();
+  });
 })();
 </script>
 </body>
