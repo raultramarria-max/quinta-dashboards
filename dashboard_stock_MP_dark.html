@@ -705,8 +705,15 @@ function parseXLSX(buffer){
     let ws=wb.Sheets[sheetName];
     let rows=XLSX.utils.sheet_to_json(ws,{defval:null});
     if(!rows.length){alert('No se encontraron datos en la hoja');return null}
-    let colMap={familia:['familia','Familia'],stock:['Stock','stock'],dias:['D/stock','D/Stock','dias_stock','Dias_stock'],valor:['Valorizado','valorizado'],whs:['WhsCode','WhsCode']};
-    function findCol(row,opts){return opts.find(k=>k in row)}
+    let colMap={familia:['familia','Familia'],stock:['Stock','stock','En stock','EN STOCK'],dias:['D/stock','D/Stock','dias_stock','Dias_stock'],valor:['Valorizado','valorizado'],whs:['WhsCode','Código de almacén','Codigo de almacen','Cód. almacén']};
+    function findCol(row,opts){
+      let keys=Object.keys(row);
+      for(let o of opts){
+        let hit=keys.find(k=>k.trim().toLowerCase()===o.trim().toLowerCase());
+        if(hit)return hit;
+      }
+      return undefined;
+    }
     let sample=rows[0];
     let cF=findCol(sample,colMap.familia);
     let cS=findCol(sample,colMap.stock);
@@ -733,11 +740,11 @@ function parseXLSX(buffer){
     });
     let cDesc=Object.keys(rows[0]).find(k=>k.toLowerCase().includes('descri'))||'';
     let cNum=Object.keys(rows[0]).find(k=>k.toLowerCase().includes('artículo')||k.toLowerCase().includes('numero')||k.toLowerCase().includes('número'))||'';
-    let cPMP=Object.keys(rows[0]).find(k=>k==='PMP'||k.toLowerCase()==='pmp')||'';
+    let cPMP=Object.keys(rows[0]).find(k=>k==='PMP'||k.toLowerCase()==='pmp'||k.toLowerCase().includes('precio promedio'))||'';
     let cMin=Object.keys(rows[0]).find(k=>k.toLowerCase().includes('minim'))||'';
-    let cBodN=Object.keys(rows[0]).find(k=>k==='WhsName'||k.toLowerCase().includes('whsname'))||'';
+    let cBodN=Object.keys(rows[0]).find(k=>k==='WhsName'||k.toLowerCase().includes('whsname')||k.toLowerCase().includes('nombre de almac'))||'';
     let productos=rows.filter(r=>r[cW]&&['EN_MATPR','PV_MATPR','CU_MATPR'].includes((r[cW]||'').trim())).map(r=>{
-      let f=((r[cF]||'')+'').trim();f=f.charAt(0).toUpperCase()+f.slice(1).toLowerCase().replace(/\b\w/g,c=>c.toUpperCase());
+      let f=((r[cF]||'')+'').trim();f=f.toLowerCase().replace(/\b\w/g,c=>c.toUpperCase());
       let d=cD?(+r[cD]||0):0;
       return{codigo:(r[cNum]||'').toString(),descripcion:(r[cDesc]||'').toString(),WhsCode:(r[cW]||'').trim(),bodega:(r[cBodN]||'').toString(),familia:f,Stock:Math.round((+r[cS]||0)*100)/100,PMP:Math.round((cPMP?(+r[cPMP]||0):0)*100)/100,Valorizado:Math.round(cV?(+r[cV]||0):0),dias_stock:Math.round(d*10)/10,minimo:Math.round((cMin?(+r[cMin]||0):0)*10)/10};
     });
