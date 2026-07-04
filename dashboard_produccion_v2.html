@@ -237,7 +237,7 @@ body {
   background: rgba(6,6,8,0.85);
   backdrop-filter: blur(6px);
   align-items: center; justify-content: center;
-  padding: 40px;
+  padding: 12px;
   animation: fadeUp .15s ease;
 }
 .chart-modal-overlay.active { display: flex; }
@@ -245,8 +245,8 @@ body {
   background: var(--surface);
   border: 1px solid var(--border2);
   border-radius: var(--radius);
-  width: 100%; max-width: 1100px;
-  max-height: 90vh;
+  width: 98vw; max-width: none;
+  height: 96vh; max-height: 96vh;
   padding: 26px 28px;
   display: flex; flex-direction: column;
   box-shadow: 0 20px 60px rgba(0,0,0,.5);
@@ -270,6 +270,19 @@ body {
 .chart-legend { display: flex; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; }
 .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted2); }
 .legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+
+/* ── TABLA LEYENDA BAJO GRÁFICO DE LÍNEAS ── */
+.ctable-wrap { overflow-x: auto; margin-top: 14px; border: 1px solid var(--border); border-radius: 8px; }
+.ctable { width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+.ctable th, .ctable td { padding: 7px 12px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--border); }
+.ctable tbody tr:last-child th, .ctable tbody tr:last-child td { border-bottom: none; }
+.ctable thead th { color: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: .05em; background: var(--surface2); }
+.ctable td { color: var(--text); }
+.ctable .ctable-serie { text-align: left; font-family: 'DM Sans', sans-serif; font-weight: 600; color: var(--muted2); }
+.ctable-dot { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 7px; vertical-align: middle; }
+.ctable .ctable-total { font-weight: 700; background: var(--surface2); }
+.ctable-modal .ctable { font-size: 15px; }
+.ctable-modal .ctable th, .ctable-modal .ctable td { padding: 9px 14px; }
 
 /* ── FAMILIA CARDS ── */
 .fam-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
@@ -405,6 +418,7 @@ table.dt td.pct { text-align: right; font-family: 'JetBrains Mono', monospace; f
     <div class="chart-modal-body">
       <canvas id="modalChartCanvas"></canvas>
     </div>
+    <div id="modalChartTable" class="ctable-modal"></div>
   </div>
 </div>
 
@@ -479,13 +493,14 @@ table.dt td.pct { text-align: right; font-family: 'JetBrains Mono', monospace; f
         </button>
       </div>
       <div class="chart-legend">
-        <div class="legend-item"><div class="legend-dot" style="background:#5090f0"></div>Proyectado</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#3dd68c"></div>Programado</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#94a3b8"></div>Proyectado</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#4f8df5"></div>Programado</div>
         <div class="legend-item"><div class="legend-dot" style="background:#e8b84b"></div>Elaborado</div>
       </div>
       <div style="position:relative;height:280px;">
         <canvas id="barChart"></canvas>
       </div>
+      <div id="barChartTable"></div>
     </div>
     <div class="card">
       <div class="card-scan"></div>
@@ -512,6 +527,9 @@ table.dt td.pct { text-align: right; font-family: 'JetBrains Mono', monospace; f
     <div class="tabla-header">
       <div class="tabla-controls">
         <input type="text" id="buscar" placeholder="🔍  Buscar producto o SKU…">
+        <select id="fPlantaTabla">
+          <option value="TODOS">Todas las plantas</option>
+        </select>
         <select id="fTipo">
           <option value="TODOS">Todos los tipos</option>
         </select>
@@ -585,7 +603,7 @@ let RAW = JSON.parse(JSON.stringify(RAW_DEFAULT));
 // Al reabrir ESTE MISMO archivo HTML se restaura automáticamente la última carga.
 // Un archivo descargado con "Descargar dashboard actualizado" trae un BUILD_ID
 // nuevo, por lo que siempre muestra sus datos embebidos e ignora cargas antiguas.
-const BUILD_ID = 'B20260703_PROD_v1';
+const BUILD_ID = 'B20260703_PROD_v8_barsem';
 const PERSIST_KEY = 'produccion';
 function __idbOpen(){ return new Promise(function(res,rej){ try{ var r=indexedDB.open('quinta_dashboards',1); r.onupgradeneeded=function(){ r.result.createObjectStore('datos'); }; r.onsuccess=function(){ res(r.result); }; r.onerror=function(){ rej(r.error); }; }catch(e){ rej(e); } }); }
 function persistSave(payload){ return __idbOpen().then(function(db){ return new Promise(function(res,rej){ var tx=db.transaction('datos','readwrite'); tx.objectStore('datos').put({buildId:BUILD_ID,savedAt:new Date().toISOString(),payload:payload},PERSIST_KEY); tx.oncomplete=res; tx.onerror=function(){ rej(tx.error); }; }); }).catch(function(e){ console.warn('Persistencia: no se pudo guardar',e); }); }
@@ -601,7 +619,17 @@ let FAMILIAS_DETECTADAS = []; // se recalcula en buildFiltroOptions()
 if (window.ChartDataLabels) {
   Chart.register(window.ChartDataLabels);
 }
-const dataLabelFmt = v => `${(v||0).toLocaleString('es-CL')} und`;
+// Etiqueta compacta para gráficas: 235 → "235" · 46.230 → "46,2K"
+const dataLabelFmt = v => {
+  v = v || 0;
+  if (Math.abs(v) >= 1000) {
+    const k = v / 1000;
+    return (Math.abs(k) >= 100
+      ? Math.round(k).toLocaleString('es-CL')
+      : k.toLocaleString('es-CL', {maximumFractionDigits: 1})) + 'K';
+  }
+  return Math.round(v).toLocaleString('es-CL');
+};
 
 const CHART_TITLES = {
   barChart: 'Proyectado · Programado · Elaborado por semana',
@@ -625,6 +653,23 @@ function pct(prod, base) { if (!base) return 0; return Math.round((prod / base) 
 function clsPct(p) { return p >= 95 ? 'pct-good' : p >= 80 ? 'pct-warn' : 'pct-bad'; }
 function colorPct(p) { return p >= 95 ? 'var(--green)' : p >= 80 ? 'var(--amber)' : 'var(--red)'; }
 function sum(arr, key) { return arr.reduce((a,r) => a + (r[key]||0), 0); }
+
+// Tabla-leyenda bajo el gráfico de líneas: color de cada serie + cantidades completas por semana
+function buildSeriesTable(containerId, labels, series) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  let html = '<div class="ctable-wrap"><table class="ctable"><thead><tr><th style="text-align:left;">Serie</th>';
+  labels.forEach(l => { html += `<th>${l}</th>`; });
+  html += '<th class="ctable-total">Total</th></tr></thead><tbody>';
+  series.forEach(s => {
+    const tot = s.data.reduce((a,v)=>a+(v||0),0);
+    html += `<tr><td class="ctable-serie"><span class="ctable-dot" style="background:${s.color}"></span>${s.label}</td>`;
+    s.data.forEach(v => { html += `<td>${Math.round(v||0).toLocaleString('es-CL')}</td>`; });
+    html += `<td class="ctable-total">${Math.round(tot).toLocaleString('es-CL')}</td></tr>`;
+  });
+  html += '</tbody></table></div>';
+  el.innerHTML = html;
+}
 
 function detectSemanas(data) {
   const s = new Set();
@@ -708,6 +753,12 @@ function buildFiltroOptions() {
   const fTipoProy = document.getElementById('fTipoProy');
   fTipoProy.dataset.allLabel = 'Todos los tipos';
   poblarSelectDinamico(fTipoProy, tipos, TIPO_LABELS, 'Sin tipo');
+
+  // Filtro de planta de la tabla Detalle de Productos (según hojas del Excel)
+  const plantas = RAW.map(r => r.ALMACEN || '');
+  const fPlantaTabla = document.getElementById('fPlantaTabla');
+  fPlantaTabla.dataset.allLabel = 'Todas las plantas';
+  poblarSelectDinamico(fPlantaTabla, plantas, {}, 'Sin planta');
 }
 
 // ════════════════════════════════════════
@@ -730,7 +781,11 @@ function handleFile(e) {
         // Leemos todo como arrays y usamos la fila índice 1 como headers.
         const allRows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
         if (allRows.length < 2) return;
-        const headers = allRows[1].map(h => String(h||'').trim().toUpperCase());
+        // Normalizar número de semana: "PROYECTADO 01" → "PROYECTADO 1"
+        // (el Excel trae cero adelante en las semanas 1-9 y sin cero de la 10 en adelante)
+        const headers = allRows[1].map(h =>
+          String(h||'').trim().toUpperCase().replace(/\s+0+(\d+)$/, ' $1')
+        );
         for (let i = 2; i < allRows.length; i++) {
           const cells = allRows[i];
           if (!cells || cells.every(c => c === '' || c === null || c === undefined)) continue;
@@ -847,36 +902,31 @@ function renderCharts(data, semanas) {
   const dPlan = semanas.map(s=>Math.round(sum(data,`PLANIFICADO ${s}`)));
   const dProd = semanas.map(s=>Math.round(sum(data,`PRODUCIDO ${s}`)));
 
-  // Si hay una sola semana seleccionada, mostrar barras (comparación puntual);
-  // si hay varias semanas, mostrar línea de evolución.
+  // Una semana seleccionada → barras (comparación puntual) · varias semanas → líneas (evolución)
+  // Paleta ejecutiva: Proyectado plata · Programado azul corporativo · Elaborado dorado
   const esUnaSemana = semanas.length === 1;
-  const tipoChart = esUnaSemana ? 'bar' : 'line';
-
   if (barChartInst) barChartInst.destroy();
   barChartInst = new Chart(document.getElementById('barChart'), {
-    type: tipoChart,
+    type: esUnaSemana ? 'bar' : 'line',
     data: {
       labels,
       datasets: esUnaSemana ? [
-        { label:'Proyectado', data:dProy, backgroundColor:'rgba(80,144,240,.75)', borderRadius:4, maxBarThickness:90,
-          datalabels:{ color:'#7ab0f8', anchor:'end', align:'top', offset:4 } },
-        { label:'Programado', data:dPlan, backgroundColor:'rgba(61,214,140,.75)', borderRadius:4, maxBarThickness:90,
-          datalabels:{ color:'#5ae0a0', anchor:'end', align:'top', offset:4 } },
-        { label:'Elaborado',  data:dProd, backgroundColor:'rgba(232,184,75,.85)', borderRadius:4, maxBarThickness:90,
-          datalabels:{ color:'#f0cd78', anchor:'end', align:'top', offset:4 } }
+        { label:'Proyectado', data:dProy, backgroundColor:'rgba(148,163,184,.80)', borderRadius:5, maxBarThickness:110,
+          datalabels:{ display:true, color:'#c3cedd', anchor:'end', align:'top', offset:4, font:{family:'JetBrains Mono',size:14,weight:'600'}, formatter: v => Math.round(v||0).toLocaleString('es-CL') } },
+        { label:'Programado', data:dPlan, backgroundColor:'rgba(79,141,245,.85)', borderRadius:5, maxBarThickness:110,
+          datalabels:{ display:true, color:'#84b1f8', anchor:'end', align:'top', offset:4, font:{family:'JetBrains Mono',size:14,weight:'600'}, formatter: v => Math.round(v||0).toLocaleString('es-CL') } },
+        { label:'Elaborado',  data:dProd, backgroundColor:'rgba(232,184,75,.90)', borderRadius:5, maxBarThickness:110,
+          datalabels:{ display:true, color:'#f2d488', anchor:'end', align:'top', offset:4, font:{family:'JetBrains Mono',size:14,weight:'700'}, formatter: v => Math.round(v||0).toLocaleString('es-CL') } }
       ] : [
-        { label:'Proyectado', data:dProy, borderColor:'#5090f0', backgroundColor:'rgba(80,144,240,.12)',
-          pointBackgroundColor:'#5090f0', pointBorderColor:'#0a0a0c', pointBorderWidth:2, pointRadius:4, pointHoverRadius:6,
-          borderWidth:2.5, tension:.35, fill:true,
-          datalabels:{ color:'#7ab0f8', align:'top', offset:6 } },
-        { label:'Programado', data:dPlan, borderColor:'#3dd68c', backgroundColor:'rgba(61,214,140,.12)',
-          pointBackgroundColor:'#3dd68c', pointBorderColor:'#0a0a0c', pointBorderWidth:2, pointRadius:4, pointHoverRadius:6,
-          borderWidth:2.5, tension:.35, fill:true,
-          datalabels:{ color:'#5ae0a0', align:'bottom', offset:6 } },
-        { label:'Elaborado',  data:dProd, borderColor:'#e8b84b', backgroundColor:'rgba(232,184,75,.16)',
-          pointBackgroundColor:'#e8b84b', pointBorderColor:'#0a0a0c', pointBorderWidth:2, pointRadius:4, pointHoverRadius:6,
-          borderWidth:2.5, tension:.35, fill:true,
-          datalabels:{ color:'#f0cd78', align:'top', offset:18 } }
+        { label:'Proyectado', data:dProy, borderColor:'#94a3b8',
+          pointBackgroundColor:'#94a3b8', pointBorderColor:'#0a0a0c', pointBorderWidth:2, pointRadius:4, pointHoverRadius:6,
+          borderWidth:2, borderDash:[7,5], tension:.35, fill:false },
+        { label:'Programado', data:dPlan, borderColor:'#4f8df5',
+          pointBackgroundColor:'#4f8df5', pointBorderColor:'#0a0a0c', pointBorderWidth:2, pointRadius:4, pointHoverRadius:6,
+          borderWidth:2.5, tension:.35, fill:false },
+        { label:'Elaborado',  data:dProd, borderColor:'#e8b84b',
+          pointBackgroundColor:'#e8b84b', pointBorderColor:'#0a0a0c', pointBorderWidth:2, pointRadius:5, pointHoverRadius:7,
+          borderWidth:3.5, tension:.35, fill:false }
       ]
     },
     options: {
@@ -887,20 +937,24 @@ function renderCharts(data, semanas) {
         legend:{display:false},
         tooltip:{
           backgroundColor:'#18181d', borderColor:'rgba(255,255,255,.1)', borderWidth:1,
-          titleFont:{family:'Bebas Neue',size:14}, bodyFont:{family:'DM Sans',size:12},
-          callbacks:{ label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString('es-CL')}` }
+          titleFont:{family:'Bebas Neue',size:18}, bodyFont:{family:'DM Sans',size:15},
+          callbacks:{ label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString('es-CL')} und` }
         },
-        datalabels:{
-          font:{family:'JetBrains Mono',size:9,weight:'600'},
-          formatter: v => dataLabelFmt(v)
-        }
+        datalabels:{ display:false }
       },
       scales:{
-        x:{ grid:{color:'rgba(255,255,255,.04)'}, ticks:{color:'#6b6b78',font:{family:'JetBrains Mono',size:11}} },
+        x:{ grid:{color:'rgba(255,255,255,.04)'}, ticks:{color:'#8b8b98',font:{family:'JetBrains Mono',size:14}} },
         y:{ grid:{color:'rgba(255,255,255,.04)'}, ticks:{display:false} }
       }
     }
   });
+
+  // Tabla-leyenda con las cantidades completas por semana
+  buildSeriesTable('barChartTable', labels, [
+    { label:'Proyectado', color:'#94a3b8', data:dProy },
+    { label:'Programado', color:'#4f8df5', data:dPlan },
+    { label:'Elaborado',  color:'#e8b84b', data:dProd }
+  ]);
 
   const famTot = FAMILIAS_DETECTADAS.map((f,idx)=>{
     const df = data.filter(r=>r.FAMILIA===f);
@@ -981,6 +1035,7 @@ function renderFamCards(data, semanas) {
 function renderTabla(data, semanas) {
   const buscar = document.getElementById('buscar').value.toLowerCase();
   const tipo = document.getElementById('fTipo').value;
+  const planta = document.getElementById('fPlantaTabla').value;
   const sortBy = document.getElementById('fSort').value;
 
   let rows = data.map(r => {
@@ -996,6 +1051,8 @@ function renderTabla(data, semanas) {
   );
   if (tipo==='__VACIO__') rows = rows.filter(r=>!(r.TIPO||'').trim());
   else if (tipo!=='TODOS') rows = rows.filter(r=>(r.TIPO||'')=== tipo);
+  if (planta==='__VACIO__') rows = rows.filter(r=>!(r.ALMACEN||'').trim());
+  else if (planta!=='TODOS') rows = rows.filter(r=>(r.ALMACEN||'')=== planta);
   rows = rows.filter(r=>r._proy>0||r._plan>0||r._prod>0);
 
   // sort
@@ -1237,26 +1294,24 @@ function openChartModal(sourceId) {
     const dProd = sourceInst.data.datasets[2].data.slice();
 
     const datasetsLine = [
-      { label:'Proyectado', data:dProy, borderColor:'#5090f0', backgroundColor:'rgba(80,144,240,.12)',
-        pointBackgroundColor:'#5090f0', pointBorderColor:'#0a0a0c', pointBorderWidth:2, pointRadius:5, pointHoverRadius:7,
-        borderWidth:3, tension:.35, fill:true,
-        datalabels:{ color:'#7ab0f8', align:'top', offset:8, font:{family:'JetBrains Mono',size:12,weight:'600'} } },
-      { label:'Programado', data:dPlan, borderColor:'#3dd68c', backgroundColor:'rgba(61,214,140,.12)',
-        pointBackgroundColor:'#3dd68c', pointBorderColor:'#0a0a0c', pointBorderWidth:2, pointRadius:5, pointHoverRadius:7,
-        borderWidth:3, tension:.35, fill:true,
-        datalabels:{ color:'#5ae0a0', align:'bottom', offset:8, font:{family:'JetBrains Mono',size:12,weight:'600'} } },
-      { label:'Elaborado',  data:dProd, borderColor:'#e8b84b', backgroundColor:'rgba(232,184,75,.16)',
-        pointBackgroundColor:'#e8b84b', pointBorderColor:'#0a0a0c', pointBorderWidth:2, pointRadius:5, pointHoverRadius:7,
-        borderWidth:3, tension:.35, fill:true,
-        datalabels:{ color:'#f0cd78', align:'top', offset:24, font:{family:'JetBrains Mono',size:12,weight:'600'} } }
+      { label:'Proyectado', data:dProy, borderColor:'#94a3b8',
+        pointBackgroundColor:'#94a3b8', pointBorderColor:'#0a0a0c', pointBorderWidth:2, pointRadius:5, pointHoverRadius:7,
+        borderWidth:2.5, borderDash:[8,6], tension:.35, fill:false },
+      { label:'Programado', data:dPlan, borderColor:'#4f8df5',
+        pointBackgroundColor:'#4f8df5', pointBorderColor:'#0a0a0c', pointBorderWidth:2, pointRadius:5, pointHoverRadius:7,
+        borderWidth:3, tension:.35, fill:false },
+      { label:'Elaborado',  data:dProd, borderColor:'#e8b84b',
+        pointBackgroundColor:'#e8b84b', pointBorderColor:'#0a0a0c', pointBorderWidth:2, pointRadius:6, pointHoverRadius:8,
+        borderWidth:4, tension:.35, fill:false }
     ];
+    const fmtFull = v => Math.round(v||0).toLocaleString('es-CL');
     const datasetsBar = [
-      { label:'Proyectado', data:dProy, backgroundColor:'rgba(80,144,240,.75)', borderRadius:5, maxBarThickness:140,
-        datalabels:{ color:'#7ab0f8', anchor:'end', align:'top', offset:4, font:{family:'JetBrains Mono',size:13,weight:'600'} } },
-      { label:'Programado', data:dPlan, backgroundColor:'rgba(61,214,140,.75)', borderRadius:5, maxBarThickness:140,
-        datalabels:{ color:'#5ae0a0', anchor:'end', align:'top', offset:4, font:{family:'JetBrains Mono',size:13,weight:'600'} } },
-      { label:'Elaborado',  data:dProd, backgroundColor:'rgba(232,184,75,.85)', borderRadius:5, maxBarThickness:140,
-        datalabels:{ color:'#f0cd78', anchor:'end', align:'top', offset:4, font:{family:'JetBrains Mono',size:13,weight:'600'} } }
+      { label:'Proyectado', data:dProy, backgroundColor:'rgba(148,163,184,.80)', borderRadius:6, maxBarThickness:160,
+        datalabels:{ display:true, color:'#c3cedd', anchor:'end', align:'top', offset:4, font:{family:'JetBrains Mono',size:18,weight:'600'}, formatter: fmtFull } },
+      { label:'Programado', data:dPlan, backgroundColor:'rgba(79,141,245,.85)', borderRadius:6, maxBarThickness:160,
+        datalabels:{ display:true, color:'#84b1f8', anchor:'end', align:'top', offset:4, font:{family:'JetBrains Mono',size:18,weight:'600'}, formatter: fmtFull } },
+      { label:'Elaborado',  data:dProd, backgroundColor:'rgba(232,184,75,.90)', borderRadius:6, maxBarThickness:160,
+        datalabels:{ display:true, color:'#f2d488', anchor:'end', align:'top', offset:4, font:{family:'JetBrains Mono',size:18,weight:'700'}, formatter: fmtFull } }
     ];
 
     modalChartInst = new Chart(ctx, {
@@ -1270,18 +1325,26 @@ function openChartModal(sourceId) {
           legend:{display:false},
           tooltip:{
             backgroundColor:'#18181d', borderColor:'rgba(255,255,255,.1)', borderWidth:1,
-            titleFont:{family:'Bebas Neue',size:15}, bodyFont:{family:'DM Sans',size:13},
-            callbacks:{ label: c => ` ${c.dataset.label}: ${c.parsed.y.toLocaleString('es-CL')}` }
+            titleFont:{family:'Bebas Neue',size:20}, bodyFont:{family:'DM Sans',size:17},
+            callbacks:{ label: c => ` ${c.dataset.label}: ${c.parsed.y.toLocaleString('es-CL')} und` }
           },
-          datalabels:{ font:{family:'JetBrains Mono',size:12,weight:'600'}, formatter: v => dataLabelFmt(v) }
+          datalabels:{ display:false }
         },
         scales:{
-          x:{ grid:{color:'rgba(255,255,255,.04)'}, ticks:{color:'#6b6b78',font:{family:'JetBrains Mono',size:13}} },
+          x:{ grid:{color:'rgba(255,255,255,.04)'}, ticks:{color:'#8b8b98',font:{family:'JetBrains Mono',size:17}} },
           y:{ grid:{color:'rgba(255,255,255,.04)'}, ticks:{display:false} }
         }
       }
     });
+
+    // Tabla-leyenda con cantidades completas en la vista ampliada
+    buildSeriesTable('modalChartTable', labels, [
+      { label:'Proyectado', color:'#94a3b8', data:dProy },
+      { label:'Programado', color:'#4f8df5', data:dPlan },
+      { label:'Elaborado',  color:'#e8b84b', data:dProd }
+    ]);
   } else if (sourceId === 'pieChart') {
+    document.getElementById('modalChartTable').innerHTML = '';
     const labels = sourceInst.data.labels.slice();
     const values = sourceInst.data.datasets[0].data.slice();
     const colors = sourceInst.data.datasets[0].backgroundColor.slice();
@@ -1335,7 +1398,7 @@ function descargar() {
 // ════════════════════════════════════════
 //  EVENTOS
 // ════════════════════════════════════════
-['fAlmacen','fFamilia','fSort','buscar','fTipo'].forEach(id =>
+['fAlmacen','fFamilia','fSort','buscar','fTipo','fPlantaTabla'].forEach(id =>
   document.getElementById(id).addEventListener('change', render)
 );
 document.getElementById('buscar').addEventListener('input', render);
