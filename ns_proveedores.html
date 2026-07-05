@@ -1623,7 +1623,7 @@ const EMBEDDED_DATA = [{"proveedor":"ALIMENTOS ZUKKER LTDA.","almacen":"EN_MATPR
 // Al reabrir ESTE MISMO archivo HTML se restaura automáticamente la última carga.
 // Un archivo descargado con "Descargar dashboard actualizado" trae un BUILD_ID
 // nuevo, por lo que siempre muestra sus datos embebidos e ignora cargas antiguas.
-const BUILD_ID = 'B1783272593435';
+const BUILD_ID = 'B1783273369179';
 const PERSIST_KEY = 'ns_proveedores';
 function __idbOpen(){ return new Promise(function(res,rej){ try{ var r=indexedDB.open('quinta_dashboards',1); r.onupgradeneeded=function(){ r.result.createObjectStore('datos'); }; r.onsuccess=function(){ res(r.result); }; r.onerror=function(){ rej(r.error); }; }catch(e){ rej(e); } }); }
 function persistSave(payload){ return __idbOpen().then(function(db){ return new Promise(function(res,rej){ var tx=db.transaction('datos','readwrite'); tx.objectStore('datos').put({buildId:BUILD_ID,savedAt:new Date().toISOString(),payload:payload},PERSIST_KEY); tx.oncomplete=res; tx.onerror=function(){ rej(tx.error); }; }); }).catch(function(e){ console.warn('Persistencia: no se pudo guardar',e); }); }
