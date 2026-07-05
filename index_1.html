@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quinta — Centro de Dashboards</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f0f0d;
+    --bg2:#181816;
+    --bg3:#1e1e1b;
+    --surface:#141412;
+    --border:#2a2a26;
+    --text:#f0ede8;
+    --muted:#888878;
+    --gold:#f0a500;
+    --gold2:#ffc340;
+    --green:#22c55e;
+    --blue:#1e88e5;
+    --red:#ef4444;
+    --amber:#f0a500;
+    --radius:10px;
+    --mono:'DM Mono',monospace;
+    --sans:'DM Sans',sans-serif;
+    --display:'Bebas Neue',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:var(--sans);
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  ::-webkit-scrollbar{width:6px}
+  ::-webkit-scrollbar-track{background:var(--bg2)}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+  /* HEADER */
+  header{
+    background:var(--surface);
+    border-bottom:2px solid var(--gold);
+    padding:0 36px;
+    display:flex;align-items:center;justify-content:space-between;
+    min-height:68px;
+  }
+  .header-left{display:flex;align-items:center;gap:16px}
+  .logo-box{
+    width:44px;height:44px;background:var(--gold);border-radius:8px;
+    display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;
+  }
+  .header-titles h1{
+    font-family:var(--display);font-size:24px;letter-spacing:.05em;color:var(--gold);line-height:1;
+  }
+  .header-titles span{
+    font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);display:block;margin-top:2px;
+  }
+  .header-right{
+    font-family:var(--mono);font-size:11px;color:var(--muted);text-align:right;line-height:1.7;
+  }
+  #clock{color:var(--gold2);font-size:13px;font-weight:500}
+
+  /* HERO */
+  .hero{
+    text-align:center;
+    padding:52px 24px 36px;
+  }
+  .hero h2{
+    font-family:var(--display);font-size:42px;letter-spacing:.06em;
+    color:var(--text);line-height:1;margin-bottom:10px;
+  }
+  .hero h2 span{color:var(--gold)}
+  .hero p{
+    font-size:13px;color:var(--muted);max-width:520px;margin:0 auto;line-height:1.8;
+  }
+
+  /* DIVIDER */
+  .divider{
+    display:flex;align-items:center;gap:16px;
+    padding:0 36px;margin-bottom:28px;
+  }
+  .divider-label{
+    font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);white-space:nowrap;
+  }
+  .divider-line{flex:1;height:1px;background:var(--border)}
+
+  /* GRID */
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(310px,1fr));
+    gap:20px;
+    padding:0 36px 60px;
+    max-width:1280px;
+    margin:0 auto;
+  }
+
+  /* CARD */
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:24px;
+    display:flex;flex-direction:column;gap:14px;
+    text-decoration:none;color:var(--text);
+    transition:border-color .2s,transform .2s,box-shadow .2s;
+    cursor:pointer;
+    position:relative;
+    overflow:hidden;
+  }
+  .card::before{
+    content:'';
+    position:absolute;top:0;left:0;right:0;height:2px;
+    background:var(--card-accent,var(--gold));
+    opacity:0;transition:opacity .2s;
+  }
+  .card:hover{
+    border-color:var(--card-accent,var(--gold));
+    transform:translateY(-3px);
+    box-shadow:0 8px 32px rgba(0,0,0,.4);
+  }
+  .card:hover::before{opacity:1}
+  .card:active{transform:translateY(-1px)}
+
+  .card-icon{
+    width:46px;height:46px;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:22px;flex-shrink:0;
+    background:rgba(255,255,255,.05);
+    border:1px solid var(--border);
+  }
+  .card-header{display:flex;align-items:center;gap:12px}
+  .card-meta{display:flex;flex-direction:column;gap:3px}
+  .card-title{
+    font-family:var(--display);font-size:18px;letter-spacing:.04em;
+    color:var(--text);line-height:1;
+  }
+  .card-tag{
+    font-size:9px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--card-accent,var(--muted));font-family:var(--mono);
+  }
+  .card-desc{
+    font-size:12px;color:var(--muted);line-height:1.7;flex:1;
+  }
+  .card-footer{
+    display:flex;align-items:center;justify-content:space-between;
+    padding-top:12px;border-top:1px solid var(--border);
+  }
+  .card-metrics{display:flex;gap:14px}
+  .metric{display:flex;flex-direction:column;gap:2px}
+  .metric-label{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .metric-value{font-family:var(--mono);font-size:11px;color:var(--text)}
+  .card-arrow{
+    width:28px;height:28px;border-radius:50%;
+    background:rgba(255,255,255,.05);border:1px solid var(--border);
+    display:flex;align-items:center;justify-content:center;
+    font-size:13px;color:var(--muted);
+    transition:background .2s,color .2s,border-color .2s;
+  }
+  .card:hover .card-arrow{
+    background:var(--card-accent,var(--gold));
+    border-color:var(--card-accent,var(--gold));
+    color:#000;
+  }
+
+  /* ACCENT COLORS */
+  .accent-gold{--card-accent:var(--gold)}
+  .accent-green{--card-accent:var(--green)}
+  .accent-blue{--card-accent:var(--blue)}
+  .accent-red{--card-accent:var(--red)}
+  .accent-amber{--card-accent:#f97316}
+
+  /* FOOTER */
+  footer{
+    border-top:1px solid var(--border);
+    padding:18px 36px;
+    display:flex;align-items:center;justify-content:space-between;
+    font-size:10px;color:var(--muted);letter-spacing:.1em;
+    font-family:var(--mono);
+  }
+  .footer-dot{
+    width:6px;height:6px;border-radius:50%;background:var(--green);
+    display:inline-block;margin-right:6px;
+    animation:pulse 2s infinite;
+  }
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+  /* STAT BAR */
+  .stat-bar{
+    display:flex;gap:32px;justify-content:center;
+    padding:0 36px 32px;flex-wrap:wrap;
+  }
+  .stat{display:flex;flex-direction:column;align-items:center;gap:4px}
+  .stat-num{
+    font-family:var(--display);font-size:32px;color:var(--gold);letter-spacing:.05em;line-height:1;
+  }
+  .stat-lbl{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-left">
+    <div class="logo-box">🏭</div>
+    <div class="header-titles">
+      <h1>QUINTA — DASHBOARDS</h1>
+      <span>Materias Primas · Producción · Calidad</span>
+    </div>
+  </div>
+  <div class="header-right">
+    <div id="clock">--:--:--</div>
+    <div id="date-display">Cargando fecha...</div>
+  </div>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <h2>CENTRO DE <span>ANALÍTICA</span></h2>
+  <p>Accede a todos los dashboards operacionales de Quinta. La información se actualiza cada vez que se sube una nueva versión del archivo.</p>
+</div>
+
+<!-- STAT BAR -->
+<div class="stat-bar">
+  <div class="stat">
+    <div class="stat-num">5</div>
+    <div class="stat-lbl">Dashboards activos</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">3</div>
+    <div class="stat-lbl">Plantas monitoreadas</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">MP</div>
+    <div class="stat-lbl">Foco principal</div>
+  </div>
+</div>
+
+<!-- DIVIDER -->
+<div class="divider">
+  <span class="divider-label">Dashboards disponibles</span>
+  <div class="divider-line"></div>
+</div>
+
+<!-- GRID -->
+<div class="grid">
+
+  <!-- MERMA -->
+  <a class="card accent-red" href="dashboard_merma_quinta_v3.html">
+    <div class="card-header">
+      <div class="card-icon">📉</div>
+      <div class="card-meta">
+        <div class="card-title">MERMA</div>
+        <div class="card-tag">Shrinkage · Waste · KPIs</div>
+      </div>
+    </div>
+    <p class="card-desc">
+      Seguimiento de mermas por almacén, SKU y motivo. Incluye KPI de Merma/Ventas, ranking por producto y desglose por tipo de pérdida.
+    </p>
+    <div class="card-footer">
+      <div class="card-metrics">
+        <div class="metric">
+          <span class="metric-label">Plantas</span>
+          <span class="metric-value">ENEA · PV</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Fuente</span>
+          <span class="metric-value">merma_quinta_v3</span>
+        </div>
+      </div>
+      <div class="card-arrow">→</div>
+    </div>
+  </a>
+
+  <!-- PRODUCCIÓN -->
+  <a class="card accent-blue" href="dashboard_produccion_v2.html">
+    <div class="card-header">
+      <div class="card-icon">🏗️</div>
+      <div class="card-meta">
+        <div class="card-title">PRODUCCIÓN</div>
+        <div class="card-tag">SKU · Semanas · Proyección</div>
+      </div>
+    </div>
+    <p class="card-desc">
+      Producción semanal por SKU en ENEA y Vespucio. Contrasta cantidad proyectada, planificada y producida con proyección blend (60% promedio + 40% regresión).
+    </p>
+    <div class="card-footer">
+      <div class="card-metrics">
+        <div class="metric">
+          <span class="metric-label">Plantas</span>
+          <span class="metric-value">ENEA · PV</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Fuente</span>
+          <span class="metric-value">ns_produccion.xlsx</span>
+        </div>
+      </div>
+      <div class="card-arrow">→</div>
+    </div>
+  </a>
+
+  <!-- SOBRECONSUMO -->
+  <a class="card accent-amber" href="dashboard_sobreconsumo.html">
+    <div class="card-header">
+      <div class="card-icon">⚠️</div>
+      <div class="card-meta">
+        <div class="card-title">SOBRECONSUMO</div>
+        <div class="card-tag">SC · Eficiencia · Alertas</div>
+      </div>
+    </div>
+    <p class="card-desc">
+      Análisis de sobreconsumo de materias primas. Detecta desviaciones por producto, proveedor y semana, con alertas por umbral crítico.
+    </p>
+    <div class="card-footer">
+      <div class="card-metrics">
+        <div class="metric">
+          <span class="metric-label">Plantas</span>
+          <span class="metric-value">ENEA · PV</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Fuente</span>
+          <span class="metric-value">sobreconsumo.xlsx</span>
+        </div>
+      </div>
+      <div class="card-arrow">→</div>
+    </div>
+  </a>
+
+  <!-- STOCK MP -->
+  <a class="card accent-green" href="dashboard_stock_MP_dark.html">
+    <div class="card-header">
+      <div class="card-icon">📦</div>
+      <div class="card-meta">
+        <div class="card-title">STOCK MP</div>
+        <div class="card-tag">Inventario · Cobertura · Alertas</div>
+      </div>
+    </div>
+    <p class="card-desc">
+      Estado de inventario de materias primas. Visualiza cobertura en días, stock crítico y exceso por familia de producto en ENEA, Vespucio y Curicó.
+    </p>
+    <div class="card-footer">
+      <div class="card-metrics">
+        <div class="metric">
+          <span class="metric-label">Plantas</span>
+          <span class="metric-value">EN · PV · CU</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Fuente</span>
+          <span class="metric-value">stock_MP.xlsx</span>
+        </div>
+      </div>
+      <div class="card-arrow">→</div>
+    </div>
+  </a>
+
+  <!-- PROVEEDORES -->
+  <a class="card accent-gold" href="ns_proveedores.html">
+    <div class="card-header">
+      <div class="card-icon">🤝</div>
+      <div class="card-meta">
+        <div class="card-title">NS PROVEEDORES</div>
+        <div class="card-tag">Nivel de Servicio · OTD · Rankings</div>
+      </div>
+    </div>
+    <p class="card-desc">
+      Nivel de servicio por proveedor y semana. Ranking por valor Sin IVA, NS% por proveedor con barra de progreso e historial de cumplimiento.
+    </p>
+    <div class="card-footer">
+      <div class="card-metrics">
+        <div class="metric">
+          <span class="metric-label">Área</span>
+          <span class="metric-value">Abastecimiento</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Fuente</span>
+          <span class="metric-value">NS_PROVEEDORES.xlsx</span>
+        </div>
+      </div>
+      <div class="card-arrow">→</div>
+    </div>
+  </a>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <span class="footer-dot"></span>
+    Sistema activo · Quinta Foods · Materias Primas
+  </div>
+  <div>Última versión desplegada: <span id="deploy-date">—</span></div>
+</footer>
+
+<script>
+  // Reloj en tiempo real
+  function updateClock(){
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2,'0');
+    const m = String(now.getMinutes()).padStart(2,'0');
+    const s = String(now.getSeconds()).padStart(2,'0');
+    document.getElementById('clock').textContent = `${h}:${m}:${s}`;
+
+    const dias = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+    const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    const d = `${dias[now.getDay()]} ${now.getDate()} ${meses[now.getMonth()]} ${now.getFullYear()}`;
+    document.getElementById('date-display').textContent = d;
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  // Fecha de despliegue (se guarda en localStorage cuando se abre por primera vez)
+  const deployKey = 'quinta_deploy_date';
+  const stored = localStorage.getItem(deployKey);
+  if(!stored){
+    const now = new Date().toLocaleDateString('es-CL',{day:'2-digit',month:'short',year:'numeric'});
+    localStorage.setItem(deployKey, now);
+    document.getElementById('deploy-date').textContent = now;
+  } else {
+    document.getElementById('deploy-date').textContent = stored;
+  }
+</script>
+
+</body>
+</html>
