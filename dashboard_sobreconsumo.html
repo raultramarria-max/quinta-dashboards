@@ -2410,7 +2410,7 @@ main{position:relative;z-index:5;padding:22px 28px;display:flex;flex-direction:c
     <div class="kpi" style="--accent:var(--red)">
       <div class="kpi-label">% Sobreconsumo Global</div>
       <div class="kpi-value" id="kPct" style="color: var(--amber);">5.8%</div>
-      <div class="kpi-sub">sobre el total consumido</div>
+      <div class="kpi-sub">sobreconsumo / utilizado</div>
     </div>
     <div class="kpi" style="--accent:#dc2626">
       <div class="kpi-label">Valor Sobreconsumo $</div>
@@ -2424,8 +2424,13 @@ main{position:relative;z-index:5;padding:22px 28px;display:flex;flex-direction:c
     </div>
     <div class="kpi" style="--accent:var(--muted)">
       <div class="kpi-label">Consumo Total</div>
-      <div class="kpi-value" id="kCantTotal">129.834.456</div>
-      <div class="kpi-sub" id="kImpTotal" style="color:var(--muted2)">Total: $41.6B</div>
+      <div class="kpi-value" id="kCantTotal">—</div>
+      <div class="kpi-sub" id="kImpTotal" style="color:var(--muted2)">Total: —</div>
+    </div>
+    <div class="kpi" style="--accent:var(--green)">
+      <div class="kpi-label">Utilizado</div>
+      <div class="kpi-value" id="kUtil" style="color:var(--green)">—</div>
+      <div class="kpi-sub">consumo total − sobreconsumo</div>
     </div>
     <div class="kpi" style="--accent:var(--enea)">
       <div class="kpi-label">SC Enea</div>
@@ -2633,438 +2638,14 @@ main{position:relative;z-index:5;padding:22px 28px;display:flex;flex-direction:c
           <th onclick="detSort('desc')" style="min-width:220px">Descripción <span class="sort-i">⇅</span></th>
           <th onclick="detSort('categoria')">Categoría <span class="sort-i">⇅</span></th>
           <th onclick="detSort('año')">Año <span class="sort-i">⇅</span></th>
-          <th class="r" onclick="detSort('cant_total')">Cantidad Total <span class="sort-i">⇅</span></th>
+          <th class="r" onclick="detSort('cant_total')">Consumo Total <span class="sort-i">⇅</span></th>
+          <th class="r" onclick="detSort('utilizado')">Utilizado <span class="sort-i">⇅</span></th>
           <th class="r" onclick="detSort('cant_sc')">Sobreconsumo <span class="sort-i">⇅</span></th>
           <th class="r" onclick="detSort('importe_sc')">Valor SC $ <span class="sort-i">⇅</span></th>
           <th class="r" onclick="detSort('pct_sc')">% SC <span class="sort-i">⇅</span></th>
           <th style="min-width:120px">Participación</th>
         </tr></thead>
-        <tbody id="detBody"><tr class="sc-row">
-      <td><span class="plant-tag tag-enea">ENEA</span></td>
-      <td style="color:var(--muted2);font-size:11px">405103</td>
-      <td style="color:#d1d5db;max-width:260px;overflow:hidden;text-overflow:ellipsis" title="ETIQUETA BLANCA 200X50 SISA OPP">ETIQUETA BLANCA 200X50 SISA OPP</td>
-      <td style="color:var(--muted2);font-size:11px">Etiquetas</td>
-      <td style="color:var(--muted);text-align:center">Todos</td>
-      <td class="r" style="color:#8899b0">6.935.000</td>
-      <td class="r" style="color:#ef4444;font-weight:700">686.162</td>
-      <td class="r" style="color:#f59e0b;font-weight:600">$11.769.105</td>
-      <td class="r" style="color:#f59e0b;font-weight:700">9.9%</td>
-      <td>
-        <div style="display:flex;align-items:center;gap:6px">
-          <div style="flex:1;height:5px;background:var(--card2);border-radius:3px;min-width:60px">
-            <div style="height:100%;width:9.9%;background:#f59e0b;border-radius:3px"></div>
-          </div>
-        </div>
-      </td>
-    </tr><tr class="sc-row">
-      <td><span class="plant-tag tag-enea">ENEA</span></td>
-      <td style="color:var(--muted2);font-size:11px">405049</td>
-      <td style="color:#d1d5db;max-width:260px;overflow:hidden;text-overflow:ellipsis" title="ETIQUETA AUTOADHESIVA 22X32 POLIPROPILENO (OPP)">ETIQUETA AUTOADHESIVA 22X32 POLIPROPILENO (OPP)</td>
-      <td style="color:var(--muted2);font-size:11px">Etiquetas</td>
-      <td style="color:var(--muted);text-align:center">Todos</td>
-      <td class="r" style="color:#8899b0">3.236.228</td>
-      <td class="r" style="color:#ef4444;font-weight:700">626.706</td>
-      <td class="r" style="color:#f59e0b;font-weight:600">$1.181.543</td>
-      <td class="r" style="color:#ef4444;font-weight:700">19.4%</td>
-      <td>
-        <div style="display:flex;align-items:center;gap:6px">
-          <div style="flex:1;height:5px;background:var(--card2);border-radius:3px;min-width:60px">
-            <div style="height:100%;width:19.4%;background:#ef4444;border-radius:3px"></div>
-          </div>
-        </div>
-      </td>
-    </tr><tr class="sc-row">
-      <td><span class="plant-tag tag-enea">ENEA</span></td>
-      <td style="color:var(--muted2);font-size:11px">403101</td>
-      <td style="color:#d1d5db;max-width:260px;overflow:hidden;text-overflow:ellipsis" title="DISCO CARTON BLANCO 19,5 JUMBO ARRIAZA">DISCO CARTON BLANCO 19,5 JUMBO ARRIAZA</td>
-      <td style="color:var(--muted2);font-size:11px">Carton</td>
-      <td style="color:var(--muted);text-align:center">Todos</td>
-      <td class="r" style="color:#8899b0">3.665.777</td>
-      <td class="r" style="color:#ef4444;font-weight:700">470.891</td>
-      <td class="r" style="color:#f59e0b;font-weight:600">$8.946.929</td>
-      <td class="r" style="color:#f59e0b;font-weight:700">12.8%</td>
-      <td>
-        <div style="display:flex;align-items:center;gap:6px">
-          <div style="flex:1;height:5px;background:var(--card2);border-radius:3px;min-width:60px">
-            <div style="height:100%;width:12.8%;background:#f59e0b;border-radius:3px"></div>
-          </div>
-        </div>
-      </td>
-    </tr><tr class="sc-row">
-      <td><span class="plant-tag tag-vesp">VESPUCIO</span></td>
-      <td style="color:var(--muted2);font-size:11px">404722</td>
-      <td style="color:#d1d5db;max-width:260px;overflow:hidden;text-overflow:ellipsis" title="ETIQUETA BLANCA 30X40">ETIQUETA BLANCA 30X40</td>
-      <td style="color:var(--muted2);font-size:11px">Etiquetas</td>
-      <td style="color:var(--muted);text-align:center">Todos</td>
-      <td class="r" style="color:#8899b0">2.900.000</td>
-      <td class="r" style="color:#ef4444;font-weight:700">453.000</td>
-      <td class="r" style="color:#f59e0b;font-weight:600">$1.399.770</td>
-      <td class="r" style="color:#ef4444;font-weight:700">15.6%</td>
-      <td>
-        <div style="display:flex;align-items:center;gap:6px">
-          <div style="flex:1;height:5px;background:var(--card2);border-radius:3px;min-width:60px">
-            <div style="height:100%;width:15.6%;background:#ef4444;border-radius:3px"></div>
-          </div>
-        </div>
-      </td>
-    </tr><tr class="sc-row">
-      <td><span class="plant-tag tag-vesp">VESPUCIO</span></td>
-      <td style="color:var(--muted2);font-size:11px">404720</td>
-      <td style="color:#d1d5db;max-width:260px;overflow:hidden;text-overflow:ellipsis" title="ETIQUETA BLANCA 100x50">ETIQUETA BLANCA 100x50</td>
-      <td style="color:var(--muted2);font-size:11px">Etiquetas</td>
-      <td style="color:var(--muted);text-align:center">Todos</td>
-      <td class="r" style="color:#8899b0">2.552.500</td>
-      <td class="r" style="color:#ef4444;font-weight:700">328.700</td>
-      <td class="r" style="color:#f59e0b;font-weight:600">$2.596.075</td>
-      <td class="r" style="color:#f59e0b;font-weight:700">12.9%</td>
-      <td>
-        <div style="display:flex;align-items:center;gap:6px">
-          <div style="flex:1;height:5px;background:var(--card2);border-radius:3px;min-width:60px">
-            <div style="height:100%;width:12.9%;background:#f59e0b;border-radius:3px"></div>
-          </div>
-        </div>
-      </td>
-    </tr><tr class="sc-row">
-      <td><span class="plant-tag tag-vesp">VESPUCIO</span></td>
-      <td style="color:var(--muted2);font-size:11px">405049</td>
-      <td style="color:#d1d5db;max-width:260px;overflow:hidden;text-overflow:ellipsis" title="ETIQUETA AUTOADHESIVA 22X32 POLIPROPILENO (OPP)">ETIQUETA AUTOADHESIVA 22X32 POLIPROPILENO (OPP)</td>
-      <td style="color:var(--muted2);font-size:11px">Etiquetas</td>
-      <td style="color:var(--muted);text-align:center">Todos</td>
-      <td class="r" style="color:#8899b0">1.795.000</td>
-      <td class="r" style="color:#ef4444;font-weight:700">288.201</td>
-      <td class="r" style="color:#f59e0b;font-weight:600">$531.580</td>
-      <td class="r" style="color:#ef4444;font-weight:700">16.1%</td>
-      <td>
-        <div style="display:flex;align-items:center;gap:6px">
-          <div style="flex:1;height:5px;background:var(--card2);border-radius:3px;min-width:60px">
-            <div style="height:100%;width:16.1%;background:#ef4444;border-radius:3px"></div>
-          </div>
-        </div>
-      </td>
-    </tr><tr class="sc-row">
-      <td><span class="plant-tag tag-vesp">VESPUCIO</span></td>
-      <td style="color:var(--muted2);font-size:11px">403219</td>
-      <td style="color:#d1d5db;max-width:260px;overflow:hidden;text-overflow:ellipsis" title="CAPSULA OVALADA N° 10 ARRIAZA">CAPSULA OVALADA N° 10 ARRIAZA</td>
-      <td style="color:var(--muted2);font-size:11px">Cupula</td>
-      <td style="color:var(--muted);text-align:center">Todos</td>
-      <td class="r" style="color:#8899b0">1.846.000</td>
-      <td class="r" style="color:#ef4444;font-weight:700">260.600</td>
-      <td class="r" style="color:#f59e0b;font-weight:600">$1.605.384</td>
-      <td class="r" style="color:#f59e0b;font-weight:700">14.1%</td>
-      <td>
-        <div style="display:flex;align-items:center;gap:6px">
-          <div style="flex:1;height:5px;background:var(--card2);border-radius:3px;min-width:60px">
-            <div style="height:100%;width:14.1%;background:#f59e0b;border-radius:3px"></div>
-          </div>
-        </div>
-      </td>
-    </tr><tr class="sc-row">
-      <td><span class="plant-tag tag-vesp">VESPUCIO</span></td>
-      <td style="color:var(--muted2);font-size:11px">404718</td>
-      <td style="color:#d1d5db;max-width:260px;overflow:hidden;text-overflow:ellipsis" title="ETIQUETA BLANCA 100x80 SISA">ETIQUETA BLANCA 100x80 SISA</td>
-      <td style="color:var(--muted2);font-size:11px">Etiquetas</td>
-      <td style="color:var(--muted);text-align:center">Todos</td>
-      <td class="r" style="color:#8899b0">1.409.500</td>
-      <td class="r" style="color:#ef4444;font-weight:700">240.132</td>
-      <td class="r" style="color:#f59e0b;font-weight:600">$2.119.241</td>
-      <td class="r" style="color:#ef4444;font-weight:700">17.0%</td>
-      <td>
-        <div style="display:flex;align-items:center;gap:6px">
-          <div style="flex:1;height:5px;background:var(--card2);border-radius:3px;min-width:60px">
-            <div style="height:100%;width:17.0%;background:#ef4444;border-radius:3px"></div>
-          </div>
-        </div>
-      </td>
-    </tr><tr class="sc-row">
-      <td><span class="plant-tag tag-vesp">VESPUCIO</span></td>
-      <td style="color:var(--muted2);font-size:11px">405159</td>
-      <td style="color:#d1d5db;max-width:260px;overflow:hidden;text-overflow:ellipsis" title="ETIQUETA BLANCA 120X100 OPP">ETIQUETA BLANCA 120X100 OPP</td>
-      <td style="color:var(--muted2);font-size:11px">Etiquetas</td>
-      <td style="color:var(--muted);text-align:center">Todos</td>
-      <td class="r" style="color:#8899b0">1.091.200</td>
-      <td class="r" style="color:#ef4444;font-weight:700">179.671</td>
-      <td class="r" style="color:#f59e0b;font-weight:600">$3.010.859</td>
-      <td class="r" style="color:#ef4444;font-weight:700">16.5%</td>
-      <td>
-        <div style="display:flex;align-items:center;gap:6px">
-          <div style="flex:1;height:5px;background:var(--card2);border-radius:3px;min-width:60px">
-            <div style="height:100%;width:16.5%;background:#ef4444;border-radius:3px"></div>
-          </div>
-        </div>
-      </td>
-    </tr><tr class="sc-row">
-      <td><span class="plant-tag tag-vesp">VESPUCIO</span></td>
-      <td style="color:var(--muted2);font-size:11px">405160</td>
-      <td style="color:#d1d5db;max-width:260px;overflow:hidden;text-overflow:ellipsis" title="ETIQUETA 200X50 POLIPROPILENO IMPR. QUINTA">ETIQUETA 200X50 POLIPROPILENO IMPR. QUINTA</td>
-      <td style="color:var(--muted2);font-size:11px">Etiquetas</td>
-      <td style="color:var(--muted);text-align:center">Todos</td>
-      <td class="r" style="color:#8899b0">507.000</td>
-      <td class="r" style="color:#ef4444;font-weight:700">134.385</td>
-      <td class="r" style="color:#f59e0b;font-weight:600">$2.171.662</td>
-      <td class="r" style="color:#ef4444;font-weight:700">26.5%</td>
-      <td>
-        <div style="display:flex;align-items:center;gap:6px">
-          <div style="flex:1;height:5px;background:var(--card2);border-radius:3px;min-width:60px">
-            <div style="height:100%;width:26.5%;background:#ef4444;border-radius:3px"></div>
-          </div>
-        </div>
-      </td>
-    </tr><tr class="sc-row">
-      <td><span class="plant-tag tag-vesp">VESPUCIO</span></td>
-      <td style="color:var(--muted2);font-size:11px">405134</td>
-      <td style="color:#d1d5db;max-width:260px;overflow:hidden;text-overflow:ellipsis" title="TRIANGULO NEGRO 45mm ZUKKER">TRIANGULO NEGRO 45mm ZUKKER</td>
-      <td style="color:var(--muted2);font-size:11px">Chocolate</td>
-      <td style="color:var(--muted);text-align:center">Todos</td>
-      <td class="r" style="color:#8899b0">1.045.400</td>
-      <td class="r" style="color:#ef4444;font-weight:700">129.582</td>
-      <td class="r" style="color:#f59e0b;font-weight:600">$4.349.678</td>
-      <td class="r" style="color:#f59e0b;font-weight:700">12.4%</td>
-      <td>
-        <div style="display:flex;align-items:center;gap:6px">
-          <div style="flex:1;height:5px;background:var(--card2);border-radius:3px;min-width:60px">
-            <div style="height:100%;width:12.4%;background:#f59e0b;border-radius:3px"></div>
-          </div>
-        </div>
-      </td>
-    </tr><tr class="sc-row">
-      <td><span class="plant-tag tag-vesp">VESPUCIO</span></td>
-      <td style="color:var(--muted2);font-size:11px">403338</td>
-      <td style="color:#d1d5db;max-width:260px;overflow:hidden;text-overflow:ellipsis" title="BLISTER 7189 1 PASTEL DEANDES">BLISTER 7189 1 PASTEL DEANDES</td>
-      <td style="color:var(--muted2);font-size:11px">Cupula</td>
-      <td style="color:var(--muted);text-align:center">Todos</td>
-      <td class="r" style="color:#8899b0">1.705.100</td>
-      <td class="r" style="color:#ef4444;font-weight:700">129.030</td>
-      <td class="r" style="color:#f59e0b;font-weight:600">$6.681.502</td>
-      <td class="r" style="color:#f59e0b;font-weight:700">7.6%</td>
-      <td>
-        <div style="display:flex;align-items:center;gap:6px">
-          <div style="flex:1;height:5px;background:var(--card2);border-radius:3px;min-width:60px">
-            <div style="height:100%;width:7.6%;background:#f59e0b;border-radius:3px"></div>
-          </div>
-        </div>
-      </td>
-    </tr><tr class="sc-row">
-      <td><span class="plant-tag tag-vesp">VESPUCIO</span></td>
-      <td style="color:var(--muted2);font-size:11px">405445</td>
-      <td style="color:#d1d5db;max-width:260px;overflow:hidden;text-overflow:ellipsis" title="BASE TORTA 15PP ALTA COEXPAN">BASE TORTA 15PP ALTA COEXPAN</td>
-      <td style="color:var(--muted2);font-size:11px">Cupula</td>
-      <td style="color:var(--muted);text-align:center">Todos</td>
-      <td class="r" style="color:#8899b0">712.600</td>
-      <td class="r" style="color:#ef4444;font-weight:700">112.320</td>
-      <td class="r" style="color:#f59e0b;font-weight:600">$7.914.602</td>
-      <td class="r" style="color:#ef4444;font-weight:700">15.8%</td>
-      <td>
-        <div style="display:flex;align-items:center;gap:6px">
-          <div style="flex:1;height:5px;background:var(--card2);border-radius:3px;min-width:60px">
-            <div style="height:100%;width:15.8%;background:#ef4444;border-radius:3px"></div>
-          </div>
-        </div>
-      </td>
-    </tr><tr class="sc-row">
-      <td><span class="plant-tag tag-vesp">VESPUCIO</span></td>
-      <td style="color:var(--muted2);font-size:11px">405103</td>
-      <td style="color:#d1d5db;max-width:260px;overflow:hidden;text-overflow:ellipsis" title="ETIQUETA BLANCA 200X50 SISA OPP">ETIQUETA BLANCA 200X50 SISA OPP</td>
-      <td style="color:var(--muted2);font-size:11px">Etiquetas</td>
-      <td style="color:var(--muted);text-align:center">Todos</td>
-      <td class="r" style="color:#8899b0">787.500</td>
-      <td class="r" style="color:#ef4444;font-weight:700">111.450</td>
-      <td class="r" style="color:#f59e0b;font-weight:600">$1.943.503</td>
-      <td class="r" style="color:#f59e0b;font-weight:700">14.2%</td>
-      <td>
-        <div style="display:flex;align-items:center;gap:6px">
-          <div style="flex:1;height:5px;background:var(--card2);border-radius:3px;min-width:60px">
-            <div style="height:100%;width:14.2%;background:#f59e0b;border-radius:3px"></div>
-          </div>
-        </div>
-      </td>
-    </tr><tr class="sc-row">
-      <td><span class="plant-tag tag-vesp">VESPUCIO</span></td>
-      <td style="color:var(--muted2);font-size:11px">405310</td>
-      <td style="color:#d1d5db;max-width:260px;overflow:hidden;text-overflow:ellipsis" title="ETIQUETA OPP TRANSPARENTE 22X32 CRISME">ETIQUETA OPP TRANSPARENTE 22X32 CRISME</td>
-      <td style="color:var(--muted2);font-size:11px">Etiquetas</td>
-      <td style="color:var(--muted);text-align:center">Todos</td>
-      <td class="r" style="color:#8899b0">474.000</td>
-      <td class="r" style="color:#ef4444;font-weight:700">109.000</td>
-      <td class="r" style="color:#f59e0b;font-weight:600">$768.850</td>
-      <td class="r" style="color:#ef4444;font-weight:700">23.0%</td>
-      <td>
-        <div style="display:flex;align-items:center;gap:6px">
-          <div style="flex:1;height:5px;background:var(--card2);border-radius:3px;min-width:60px">
-            <div style="height:100%;width:23.0%;background:#ef4444;border-radius:3px"></div>
-          </div>
-        </div>
-      </td>
-    </tr><tr class="sc-row">
-      <td><span class="plant-tag tag-vesp">VESPUCIO</span></td>
-      <td style="color:var(--muted2);font-size:11px">403248</td>
-      <td style="color:#d1d5db;max-width:260px;overflow:hidden;text-overflow:ellipsis" title="CUPULA 15 PP ALTA WALMART">CUPULA 15 PP ALTA WALMART</td>
-      <td style="color:var(--muted2);font-size:11px">Cupula</td>
-      <td style="color:var(--muted);text-align:center">Todos</td>
-      <td class="r" style="color:#8899b0">1.115.505</td>
-      <td class="r" style="color:#ef4444;font-weight:700">94.755</td>
-      <td class="r" style="color:#f59e0b;font-weight:600">$21.689.033</td>
-      <td class="r" style="color:#f59e0b;font-weight:700">8.5%</td>
-      <td>
-        <div style="display:flex;align-items:center;gap:6px">
-          <div style="flex:1;height:5px;background:var(--card2);border-radius:3px;min-width:60px">
-            <div style="height:100%;width:8.5%;background:#f59e0b;border-radius:3px"></div>
-          </div>
-        </div>
-      </td>
-    </tr><tr class="sc-row">
-      <td><span class="plant-tag tag-vesp">VESPUCIO</span></td>
-      <td style="color:var(--muted2);font-size:11px">362106</td>
-      <td style="color:#d1d5db;max-width:260px;overflow:hidden;text-overflow:ellipsis" title="HOJARASCA OBERENA">HOJARASCA OBERENA</td>
-      <td style="color:var(--muted2);font-size:11px">Insumo</td>
-      <td style="color:var(--muted);text-align:center">Todos</td>
-      <td class="r" style="color:#8899b0">1.392.016</td>
-      <td class="r" style="color:#ef4444;font-weight:700">92.285</td>
-      <td class="r" style="color:#f59e0b;font-weight:600">$15.958.716</td>
-      <td class="r" style="color:#10b981;font-weight:700">6.6%</td>
-      <td>
-        <div style="display:flex;align-items:center;gap:6px">
-          <div style="flex:1;height:5px;background:var(--card2);border-radius:3px;min-width:60px">
-            <div style="height:100%;width:6.6%;background:#10b981;border-radius:3px"></div>
-          </div>
-        </div>
-      </td>
-    </tr><tr class="sc-row">
-      <td><span class="plant-tag tag-vesp">VESPUCIO</span></td>
-      <td style="color:var(--muted2);font-size:11px">405721</td>
-      <td style="color:#d1d5db;max-width:260px;overflow:hidden;text-overflow:ellipsis" title="ETIQUETA COLOR CREMA 245X40 OPP">ETIQUETA COLOR CREMA 245X40 OPP</td>
-      <td style="color:var(--muted2);font-size:11px">Etiquetas</td>
-      <td style="color:var(--muted);text-align:center">Todos</td>
-      <td class="r" style="color:#8899b0">681.000</td>
-      <td class="r" style="color:#ef4444;font-weight:700">88.000</td>
-      <td class="r" style="color:#f59e0b;font-weight:600">$1.821.600</td>
-      <td class="r" style="color:#f59e0b;font-weight:700">12.9%</td>
-      <td>
-        <div style="display:flex;align-items:center;gap:6px">
-          <div style="flex:1;height:5px;background:var(--card2);border-radius:3px;min-width:60px">
-            <div style="height:100%;width:12.9%;background:#f59e0b;border-radius:3px"></div>
-          </div>
-        </div>
-      </td>
-    </tr><tr class="sc-row">
-      <td><span class="plant-tag tag-vesp">VESPUCIO</span></td>
-      <td style="color:var(--muted2);font-size:11px">404748</td>
-      <td style="color:#d1d5db;max-width:260px;overflow:hidden;text-overflow:ellipsis" title="ETIQUETA BLANCA 40x200 SISA">ETIQUETA BLANCA 40x200 SISA</td>
-      <td style="color:var(--muted2);font-size:11px">Etiquetas</td>
-      <td style="color:var(--muted);text-align:center">Todos</td>
-      <td class="r" style="color:#8899b0">351.000</td>
-      <td class="r" style="color:#ef4444;font-weight:700">80.600</td>
-      <td class="r" style="color:#f59e0b;font-weight:600">$1.205.080</td>
-      <td class="r" style="color:#ef4444;font-weight:700">23.0%</td>
-      <td>
-        <div style="display:flex;align-items:center;gap:6px">
-          <div style="flex:1;height:5px;background:var(--card2);border-radius:3px;min-width:60px">
-            <div style="height:100%;width:23.0%;background:#ef4444;border-radius:3px"></div>
-          </div>
-        </div>
-      </td>
-    </tr><tr class="sc-row">
-      <td><span class="plant-tag tag-vesp">VESPUCIO</span></td>
-      <td style="color:var(--muted2);font-size:11px">400101</td>
-      <td style="color:#d1d5db;max-width:260px;overflow:hidden;text-overflow:ellipsis" title="BOLSA 30X32 CM 35 MICRAS">BOLSA 30X32 CM 35 MICRAS</td>
-      <td style="color:var(--muted2);font-size:11px">Bolsas</td>
-      <td style="color:var(--muted);text-align:center">Todos</td>
-      <td class="r" style="color:#8899b0">443.166</td>
-      <td class="r" style="color:#ef4444;font-weight:700">78.129</td>
-      <td class="r" style="color:#f59e0b;font-weight:600">$1.390.696</td>
-      <td class="r" style="color:#ef4444;font-weight:700">17.6%</td>
-      <td>
-        <div style="display:flex;align-items:center;gap:6px">
-          <div style="flex:1;height:5px;background:var(--card2);border-radius:3px;min-width:60px">
-            <div style="height:100%;width:17.6%;background:#ef4444;border-radius:3px"></div>
-          </div>
-        </div>
-      </td>
-    </tr><tr class="sc-row">
-      <td><span class="plant-tag tag-vesp">VESPUCIO</span></td>
-      <td style="color:var(--muted2);font-size:11px">405444</td>
-      <td style="color:#d1d5db;max-width:260px;overflow:hidden;text-overflow:ellipsis" title="CUPULA TORTA 15 PP ALTA COEXPAN">CUPULA TORTA 15 PP ALTA COEXPAN</td>
-      <td style="color:var(--muted2);font-size:11px">Cupula</td>
-      <td style="color:var(--muted);text-align:center">Todos</td>
-      <td class="r" style="color:#8899b0">863.700</td>
-      <td class="r" style="color:#ef4444;font-weight:700">77.625</td>
-      <td class="r" style="color:#f59e0b;font-weight:600">$14.056.624</td>
-      <td class="r" style="color:#f59e0b;font-weight:700">9.0%</td>
-      <td>
-        <div style="display:flex;align-items:center;gap:6px">
-          <div style="flex:1;height:5px;background:var(--card2);border-radius:3px;min-width:60px">
-            <div style="height:100%;width:9.0%;background:#f59e0b;border-radius:3px"></div>
-          </div>
-        </div>
-      </td>
-    </tr><tr class="sc-row">
-      <td><span class="plant-tag tag-vesp">VESPUCIO</span></td>
-      <td style="color:var(--muted2);font-size:11px">353009</td>
-      <td style="color:#d1d5db;max-width:260px;overflow:hidden;text-overflow:ellipsis" title="DISCO PANQUEQUE VAINILLA SEMI-ELAB UND">DISCO PANQUEQUE VAINILLA SEMI-ELAB UND</td>
-      <td style="color:var(--muted2);font-size:11px">Insumo</td>
-      <td style="color:var(--muted);text-align:center">Todos</td>
-      <td class="r" style="color:#8899b0">703.223</td>
-      <td class="r" style="color:#ef4444;font-weight:700">68.534</td>
-      <td class="r" style="color:#f59e0b;font-weight:600">$10.639.988</td>
-      <td class="r" style="color:#f59e0b;font-weight:700">9.8%</td>
-      <td>
-        <div style="display:flex;align-items:center;gap:6px">
-          <div style="flex:1;height:5px;background:var(--card2);border-radius:3px;min-width:60px">
-            <div style="height:100%;width:9.8%;background:#f59e0b;border-radius:3px"></div>
-          </div>
-        </div>
-      </td>
-    </tr><tr class="sc-row">
-      <td><span class="plant-tag tag-enea">ENEA</span></td>
-      <td style="color:var(--muted2);font-size:11px">107104</td>
-      <td style="color:#d1d5db;max-width:260px;overflow:hidden;text-overflow:ellipsis" title="CREMA LACTEA DIWATTS">CREMA LACTEA DIWATTS</td>
-      <td style="color:var(--muted2);font-size:11px">Cremas</td>
-      <td style="color:var(--muted);text-align:center">Todos</td>
-      <td class="r" style="color:#8899b0">831.597</td>
-      <td class="r" style="color:#ef4444;font-weight:700">68.229</td>
-      <td class="r" style="color:#f59e0b;font-weight:600">$223.419.531</td>
-      <td class="r" style="color:#f59e0b;font-weight:700">8.2%</td>
-      <td>
-        <div style="display:flex;align-items:center;gap:6px">
-          <div style="flex:1;height:5px;background:var(--card2);border-radius:3px;min-width:60px">
-            <div style="height:100%;width:8.2%;background:#f59e0b;border-radius:3px"></div>
-          </div>
-        </div>
-      </td>
-    </tr><tr class="sc-row">
-      <td><span class="plant-tag tag-vesp">VESPUCIO</span></td>
-      <td style="color:var(--muted2);font-size:11px">100303</td>
-      <td style="color:#d1d5db;max-width:260px;overflow:hidden;text-overflow:ellipsis" title="JARABE DE REMOJO 35° TOTEM 1000 Lt">JARABE DE REMOJO 35° TOTEM 1000 Lt</td>
-      <td style="color:var(--muted2);font-size:11px">Remojo</td>
-      <td style="color:var(--muted);text-align:center">Todos</td>
-      <td class="r" style="color:#8899b0">416.120</td>
-      <td class="r" style="color:#ef4444;font-weight:700">67.684</td>
-      <td class="r" style="color:#f59e0b;font-weight:600">$45.159.062</td>
-      <td class="r" style="color:#ef4444;font-weight:700">16.3%</td>
-      <td>
-        <div style="display:flex;align-items:center;gap:6px">
-          <div style="flex:1;height:5px;background:var(--card2);border-radius:3px;min-width:60px">
-            <div style="height:100%;width:16.3%;background:#ef4444;border-radius:3px"></div>
-          </div>
-        </div>
-      </td>
-    </tr><tr class="sc-row">
-      <td><span class="plant-tag tag-vesp">VESPUCIO</span></td>
-      <td style="color:var(--muted2);font-size:11px">362105</td>
-      <td style="color:#d1d5db;max-width:260px;overflow:hidden;text-overflow:ellipsis" title="HOJARASCA 19 CMS. PAVESI">HOJARASCA 19 CMS. PAVESI</td>
-      <td style="color:var(--muted2);font-size:11px">Insumo</td>
-      <td style="color:var(--muted);text-align:center">Todos</td>
-      <td class="r" style="color:#8899b0">1.229.731</td>
-      <td class="r" style="color:#ef4444;font-weight:700">66.700</td>
-      <td class="r" style="color:#f59e0b;font-weight:600">$11.899.054</td>
-      <td class="r" style="color:#10b981;font-weight:700">5.4%</td>
-      <td>
-        <div style="display:flex;align-items:center;gap:6px">
-          <div style="flex:1;height:5px;background:var(--card2);border-radius:3px;min-width:60px">
-            <div style="height:100%;width:5.4%;background:#10b981;border-radius:3px"></div>
-          </div>
-        </div>
-      </td>
-    </tr></tbody>
+        <tbody id="detBody"><tr><td colspan="11" style="text-align:center;padding:30px;color:var(--muted)">Cargando…</td></tr></tbody>
       </table>
     </div>
     <div class="pag">
@@ -3096,7 +2677,7 @@ const RAW = { weekly: [{"año":2024,"semana":1,"planta":"ENEA","categoria":"Azuc
 // Al reabrir ESTE MISMO archivo HTML se restaura automáticamente la última carga.
 // Un archivo descargado con "Descargar dashboard actualizado" trae un BUILD_ID
 // nuevo, por lo que siempre muestra sus datos embebidos e ignora cargas antiguas.
-const BUILD_ID = 'B1783271891345';
+const BUILD_ID = 'B1783354155703';
 const PERSIST_KEY = 'sobreconsumo';
 function __idbOpen(){ return new Promise(function(res,rej){ try{ var r=indexedDB.open('quinta_dashboards',1); r.onupgradeneeded=function(){ r.result.createObjectStore('datos'); }; r.onsuccess=function(){ res(r.result); }; r.onerror=function(){ rej(r.error); }; }catch(e){ rej(e); } }); }
 function persistSave(payload){ return __idbOpen().then(function(db){ return new Promise(function(res,rej){ var tx=db.transaction('datos','readwrite'); tx.objectStore('datos').put({buildId:BUILD_ID,savedAt:new Date().toISOString(),payload:payload},PERSIST_KEY); tx.oncomplete=res; tx.onerror=function(){ rej(tx.error); }; }); }).catch(function(e){ console.warn('Persistencia: no se pudo guardar',e); }); }
@@ -3111,6 +2692,10 @@ const charts = {};
 // ═══ FORMAT ══════════════════════════════════
 const fmtN = v => Math.round(v).toLocaleString('es-CL');
 const fmtP = v => v.toFixed(1) + '%';
+// ── Estándar %SC: Sobreconsumo / Utilizado (Utilizado = Consumo Total − Sobreconsumo) ──
+const pctSC = (sc, tot) => { const u = Math.abs(tot - sc); return u > 0 ? +(sc / u * 100).toFixed(2) : (sc > 0 ? 100 : 0); };
+// Utilizado = Consumo Total − Sobreconsumo; si da negativo se muestra en positivo (×−1)
+const calcUtil = (sc, tot) => Math.abs(tot - sc);
 
 // ═══ FILTERS INIT ════════════════════════════
 // ═══ MULTISELECT ENGINE ══════════════════════
@@ -3261,7 +2846,8 @@ function renderKPIs() {
   const sc     = filtered.reduce((s,r)=>s+r.cant_sc,0);
   const impTot = filtered.reduce((s,r)=>s+(r.importe_total||0),0);
   const impSC  = filtered.reduce((s,r)=>s+(r.importe_sc||0),0);
-  const pct    = tot>0 ? sc/tot*100 : 0;
+  const util   = calcUtil(sc, tot);
+  const pct    = pctSC(sc, tot);
 
   const fE  = filtered.filter(r=>r.planta==='ENEA');
   const fV  = filtered.filter(r=>r.planta==='VESPUCIO');
@@ -3278,10 +2864,11 @@ function renderKPIs() {
   document.getElementById('kImpSC').textContent      = fmtFull(impSC);
   document.getElementById('kCantSC').textContent     = fmtN(sc);
   document.getElementById('kCantTotal').textContent  = fmtN(tot);
+  document.getElementById('kUtil').textContent       = fmtN(util);
   document.getElementById('kImpTotal').textContent   = 'Total: '+fmtM(impTot);
-  document.getElementById('kEnea').textContent       = totE>0 ? fmtP(scE/totE*100) : '0.0%';
+  document.getElementById('kEnea').textContent       = fmtP(pctSC(scE, totE));
   document.getElementById('kEneaImp').textContent    = 'SC: '+fmtFull(impScE);
-  document.getElementById('kVesp').textContent       = totV>0 ? fmtP(scV/totV*100) : '0.0%';
+  document.getElementById('kVesp').textContent       = fmtP(pctSC(scV, totV));
   document.getElementById('kVespImp').textContent    = 'SC: '+fmtFull(impScV);
   document.getElementById('kProds').textContent      = prodsWithSC;
   document.getElementById('kTotalProds').textContent = prods.length;
@@ -3365,7 +2952,7 @@ function renderChartSem() {
   const keys = Object.keys(bySem).sort();
   if(!keys.length){ noData('chartSem'); return; }
   const labels = keys.map(k => 'S'+k.split('-')[1]+' '+k.split('-')[0]);
-  const pcts   = keys.map(k => bySem[k].tot>0 ? +(bySem[k].sc/bySem[k].tot*100).toFixed(2) : 0);
+  const pcts   = keys.map(k => pctSC(bySem[k].sc, bySem[k].tot));
   const scs    = keys.map(k => bySem[k].sc);
 
   const ctx = document.getElementById('chartSem').getContext('2d');
@@ -3416,7 +3003,7 @@ function renderChartPlanta() {
   charts['chartPlanta'] = new Chart(ctx,{
     type:'doughnut',
     data:{
-      labels: plantas.map(p => `${p} — ${data[p].tot>0?(data[p].sc/data[p].tot*100).toFixed(1):0}% SC`),
+      labels: plantas.map(p => `${p} — ${pctSC(data[p].sc, data[p].tot).toFixed(1)}% SC`),
       datasets:[{
         data: plantas.map(p=>data[p].sc),
         backgroundColor: plantas.map(p=>(colors[p]||'#6b7280')+'cc'),
@@ -3446,7 +3033,7 @@ function renderChartCat() {
     data[r.categoria].sc  += r.cant_sc;
   });
   const cats = Object.entries(data)
-    .map(([c,v])=>({cat:c,pct:v.tot>0?v.sc/v.tot*100:0,sc:v.sc}))
+    .map(([c,v])=>({cat:c,pct:pctSC(v.sc,v.tot),sc:v.sc}))
     .sort((a,b)=>a.cat.localeCompare(b.cat,'es'));
   if(!cats.length){ noData('chartCat'); return; }
   const ctx = document.getElementById('chartCat').getContext('2d');
@@ -3505,7 +3092,7 @@ function getFilteredProducts() {
       agg[k].importe_sc += r.is;
     });
     return Object.values(agg).map(r => ({
-      ...r, pct_sc: r.cant_total > 0 ? +(r.cant_sc / r.cant_total * 100).toFixed(2) : 0
+      ...r, utilizado: calcUtil(r.cant_sc, r.cant_total), pct_sc: pctSC(r.cant_sc, r.cant_total)
     }));
   }
 
@@ -3528,11 +3115,12 @@ function getFilteredProducts() {
       agg[k].importe_total += (r.importe_total || 0);
       agg[k].importe_sc    += (r.importe_sc    || 0);
     });
-    data = Object.values(agg).map(r => ({
-      ...r, pct_sc: r.cant_total > 0 ? +(r.cant_sc / r.cant_total * 100).toFixed(2) : 0
-    }));
+    data = Object.values(agg);
   }
-  return data;
+  // Recalcular siempre bajo el estándar: Utilizado = Consumo Total − SC; %SC = SC / Utilizado
+  return data.map(r => ({
+    ...r, utilizado: calcUtil(r.cant_sc, r.cant_total), pct_sc: pctSC(r.cant_sc, r.cant_total)
+  }));
 }
 
 function renderTopSC() {
@@ -3543,7 +3131,7 @@ function renderTopSC() {
   const colors = { ENEA: 'var(--enea)', VESPUCIO: 'var(--vesp)' };
   const container = document.getElementById('topSCBody');
   container.innerHTML = top10.map(p => {
-    const pct = p.cant_total > 0 ? (p.cant_sc / p.cant_total * 100).toFixed(1) : '0.0';
+    const pct = pctSC(p.cant_sc, p.cant_total).toFixed(1);
     const col = colors[p.planta] || 'var(--cyan)';
     const barPct = (p.cant_sc / maxSC * 100).toFixed(1);
     return `<div class="sc-item">
@@ -3580,7 +3168,7 @@ function renderChartAnios() {
       bySem[r.semana].tot += r.cant_total;
       bySem[r.semana].sc  += r.cant_sc;
     });
-    const serie = semSet.map(s=>bySem[s]?+(bySem[s].sc/(bySem[s].tot||1)*100).toFixed(2):null);
+    const serie = semSet.map(s=>bySem[s]?pctSC(bySem[s].sc,bySem[s].tot):null);
     let lastIdx = -1;
     serie.forEach((v,i)=>{ if(v!==null) lastIdx = i; });
     return {
@@ -3616,7 +3204,7 @@ function renderChartAnios() {
 // ═══ DETAIL TABLE ════════════════════════════
 function detSort(f) {
   if(detSortField===f) detSortDir=detSortDir==='asc'?'desc':'asc';
-  else {detSortField=f; detSortDir=f==='cant_sc'||f==='pct_sc'?'desc':'asc';}
+  else {detSortField=f; detSortDir=(f==='cant_sc'||f==='pct_sc'||f==='utilizado'||f==='cant_total')?'desc':'asc';}
   detPage=1; renderDet();
 }
 function renderDet() {
@@ -3646,7 +3234,8 @@ function renderDet() {
 
   const tbody = document.getElementById('detBody');
   tbody.innerHTML = page.map(p => {
-    const pct = typeof p.pct_sc==='number'?p.pct_sc:(p.cant_total>0?p.cant_sc/p.cant_total*100:0);
+    const pct = typeof p.pct_sc==='number'?p.pct_sc:pctSC(p.cant_sc,p.cant_total);
+    const util = typeof p.utilizado==='number'?p.utilizado:calcUtil(p.cant_sc,p.cant_total);
     const barColor = pct>15?'#ef4444':pct>7?'#f59e0b':'#10b981';
     const hasSC = p.cant_sc>0;
     return `<tr class="${hasSC?'sc-row':''}">
@@ -3656,6 +3245,7 @@ function renderDet() {
       <td style="color:var(--muted2);font-size:11px">${p.categoria||'—'}</td>
       <td style="color:var(--muted);text-align:center">${p.año}</td>
       <td class="r" style="color:#8899b0">${fmtN(p.cant_total)}</td>
+      <td class="r" style="color:#10b981;font-weight:600">${fmtN(util)}</td>
       <td class="r" style="color:${hasSC?'#ef4444':'var(--muted)'};font-weight:${hasSC?'700':'400'}">${hasSC?fmtN(p.cant_sc):'0'}</td>
       <td class="r" style="color:${hasSC?'#f59e0b':'var(--muted)'};font-weight:${hasSC?'600':'400'}">${hasSC?fmtFull(p.importe_sc||0):'—'}</td>
       <td class="r" style="color:${barColor};font-weight:700">${pct.toFixed(1)}%</td>
@@ -3667,7 +3257,7 @@ function renderDet() {
         </div>
       </td>
     </tr>`;
-  }).join('') || `<tr><td colspan="10" style="text-align:center;padding:30px;color:var(--muted)">Sin datos</td></tr>`;
+  }).join('') || `<tr><td colspan="11" style="text-align:center;padding:30px;color:var(--muted)">Sin datos</td></tr>`;
 
   document.getElementById('detInfo').textContent = total>0
     ? `Mostrando ${(detPage-1)*ps+1}–${Math.min(detPage*ps,total)} de ${total.toLocaleString('es-CL')}`:'';
@@ -3808,7 +3398,7 @@ function loadExcel(e) {
 
       if (!totalRows && !scRows) throw new Error('No se encontraron datos en "ENEA/VESPUCIO SOBRECONSUMO" ni en "base"');
 
-      // ── 3) Combinar: % SC = sobreconsumo confirmado ("base") / cantidad total (hojas SOBRECONSUMO) ──
+      // ── 3) Combinar: % SC = sobreconsumo confirmado ("base") / utilizado (consumo total − sobreconsumo) ──
       const newWeeklyProd = {};
       new Set([...Object.keys(totalMap), ...Object.keys(scMap)]).forEach(key => {
         const [añoS, semS, planta, skuS] = key.split('||');
@@ -3825,7 +3415,7 @@ function loadExcel(e) {
         const categoria = (t && t.categoria) || (s && s.categoria) || 'Sin Categoría';
         newWeeklyProd[key] = {
           a: +añoS, s: +semS, p: planta, id: +skuS, d: desc, c: categoria,
-          ct, it, cs, is, pct: ct > 0 ? +(cs / ct * 100).toFixed(2) : 0
+          ct, it, cs, is, pct: pctSC(cs, ct)
         };
       });
 
@@ -3848,8 +3438,8 @@ function loadExcel(e) {
         newProducts[pk].importe_sc    += r.is;
       });
 
-      RAW.weekly      = Object.values(newWeekly).map(r => ({ ...r, pct_sc: r.cant_total > 0 ? +(r.cant_sc / r.cant_total * 100).toFixed(2) : 0 }));
-      RAW.products    = Object.values(newProducts).map(r => ({ ...r, pct_sc: r.cant_total > 0 ? +(r.cant_sc / r.cant_total * 100).toFixed(2) : 0 }));
+      RAW.weekly      = Object.values(newWeekly).map(r => ({ ...r, pct_sc: pctSC(r.cant_sc, r.cant_total) }));
+      RAW.products    = Object.values(newProducts).map(r => ({ ...r, pct_sc: pctSC(r.cant_sc, r.cant_total) }));
       RAW.weekly_prod = Object.values(newWeeklyProd);
 
       persistSave({weekly: RAW.weekly, products: RAW.products, weekly_prod: RAW.weekly_prod, fileName: file.name});
